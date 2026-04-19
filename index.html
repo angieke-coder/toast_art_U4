@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>interactive kitchen challenge</title>
+    <title>gemini interactive kitchen - classroom challenge</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* modern fancy bowl */
         .bowl-fancy {
             width: 500px;
-            height: 240px;
+            height: 220px;
             background: linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(220,230,245,0.8) 100%);
             border: 6px solid #94a3b8;
             border-radius: 15px 15px 200px 200px;
@@ -21,7 +21,7 @@
             display: flex;
             align-items: flex-end;
             justify-content: center;
-            padding-bottom: 20px;
+            padding-bottom: 15px;
             z-index: 10;
         }
 
@@ -37,7 +37,7 @@
         }
 
         .ingredient-in-bowl {
-            font-size: 3.5rem;
+            font-size: 3rem;
             filter: drop-shadow(0 4px 3px rgba(0,0,0,0.2));
             animation: dropIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
@@ -65,7 +65,6 @@
             backdrop-filter: blur(12px);
         }
 
-        /* full screen overlays */
         .fs-overlay {
             position: fixed;
             inset: 0;
@@ -81,12 +80,19 @@
         #reset-overlay { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(40px); }
         #error-overlay { background: rgba(239, 68, 68, 0.15); backdrop-filter: blur(20px); }
         #success-overlay { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(30px); }
+        
+        #sequence-overlay { 
+            background: white; 
+            padding: 1.5rem; 
+            justify-content: flex-start; 
+            overflow-y: hidden;
+        }
 
         .big-icon { font-size: 15rem; filter: drop-shadow(0 20px 30px rgba(0,0,0,0.2)); }
         
         .glamorous-img {
             max-width: 80%;
-            max-height: 55vh;
+            max-height: 45vh;
             border-radius: 40px;
             box-shadow: 0 30px 60px rgba(0,0,0,0.3);
             animation: glamIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -120,10 +126,9 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* forced lowercase for everything */
+        /* forced lowercase for English, doesn't affect Chinese */
         * { text-transform: lowercase !important; }
 
-        /* circular number styling for cleaner UI */
         .num-circle {
             width: 60px;
             height: 60px;
@@ -136,6 +141,53 @@
             font-size: 2rem;
             font-weight: 900;
         }
+
+        /* sequence matching styles */
+        .step-card {
+            background: white;
+            border: 3px dashed #cbd5e1;
+            border-radius: 15px;
+            padding: 10px 15px;
+            width: 90%;
+            max-width: 1000px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+        .step-slot {
+            width: 110px;
+            height: 50px;
+            background: #f1f5f9;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.2rem;
+            color: #64748b;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .label-pill {
+            background: #3b82f6;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 900;
+            font-size: 1.3rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .step-text { font-size: 1.15rem; font-weight: 600; color: #334155; text-align: left; line-height: 1.3; }
+        
+        /* Highlighting ingredients in red */
+        .ingredient-text { color: #dc2626 !important; font-weight: 800; }
+        /* Highlighting verbs for clarity */
+        .verb-highlight { color: #2563eb !important; font-weight: 800; }
+        .cn-hint { font-size: 0.95rem; color: #64748b; font-weight: 500; margin-left: 2px; }
     </style>
 </head>
 <body class="bg-slate-100 h-screen w-screen overflow-hidden flex flex-col font-sans select-none text-slate-800">
@@ -158,95 +210,119 @@
             <div class="big-icon animate-pulse text-red-600" style="animation-delay: 0.3s">🚨</div>
         </div>
         <div class="text-6xl font-black mt-12 text-red-600">wrong mix! try again!</div>
-        <div class="text-2xl font-bold mt-4 text-slate-500 underline">tap anywhere to go back</div>
     </div>
 
     <!-- success overlay -->
     <div id="success-overlay" class="fs-overlay" onclick="this.style.display='none'">
         <div class="sparkle-bg"></div>
         <div class="relative z-10 flex flex-col items-center justify-center w-full">
-            <img id="success-food-img" class="glamorous-img mb-10" src="" alt="food reward">
-            <div id="success-message" class="text-4xl font-black text-slate-800 max-w-5xl leading-tight px-10"></div>
-            <div class="text-2xl font-bold mt-8 text-amber-600 animate-bounce">perfect work of art! tap to close!</div>
+            <img id="success-food-img" class="glamorous-img mb-6" src="" alt="food reward">
+            <div id="success-message" class="text-3xl font-black text-slate-800 max-w-5xl leading-tight px-10"></div>
+            <div id="popcorn-bonus" class="text-2xl font-bold text-blue-600 mt-2 hidden italic">enjoy it with a tub of popcorn!</div>
+            <div class="text-xl font-bold mt-6 text-amber-600 animate-bounce">perfect work of art! tap to close!</div>
         </div>
     </div>
 
+    <!-- sequence phase overlay -->
+    <div id="sequence-overlay" class="fs-overlay">
+        <h2 class="text-3xl font-black text-blue-600 mb-2">step matching challenge!</h2>
+        <p class="text-slate-400 mb-3">tap a blue label then tap a gray slot</p>
+        <div id="sequence-labels" class="flex gap-3 mb-4 flex-wrap justify-center"></div>
+        <div id="sequence-list" class="w-full flex flex-col items-center"></div>
+        <button id="check-steps-btn" onclick="checkSequence()" class="mt-4 bg-green-500 text-white px-12 py-3 rounded-2xl text-2xl font-black shadow-xl active:scale-95 transition-all">check steps</button>
+    </div>
+
     <!-- header -->
-    <header class="h-24 bg-white shadow-md flex items-center justify-between px-12 border-b-2 border-slate-200 shrink-0">
+    <header class="h-20 bg-white shadow-sm flex items-center justify-between px-12 border-b-2 border-slate-200 shrink-0">
         <div class="flex flex-col">
-            <h1 id="main-display" class="text-3xl font-black text-blue-600 leading-tight">kitchen challenge</h1>
-            <p id="sub-display" class="text-md text-slate-500 font-bold italic">can the class guess what you are making?</p>
+            <h1 id="main-display" class="text-2xl font-black text-blue-600 leading-tight">kitchen challenge</h1>
+            <p id="sub-display" class="text-sm text-slate-500 font-bold italic">can the class guess what you are making?</p>
         </div>
-        <div class="flex items-center gap-4">
-            <div id="recipe-count-badge" class="bg-blue-100 text-blue-700 px-4 py-2 rounded-full font-black text-xl">
-                5 secret recipes
-            </div>
-        </div>
+        <div class="bg-blue-100 text-blue-700 px-4 py-1 rounded-full font-black text-lg">5 secret recipes</div>
     </header>
 
-    <main class="flex flex-1 overflow-hidden">
-        <!-- left: bowl & controls -->
+    <main id="game-container" class="flex flex-1 overflow-hidden">
         <div class="w-7/12 flex flex-col items-center justify-center p-8 relative bg-slate-50">
-            <div class="relative group">
+            <div class="relative">
                 <div id="main-bowl" class="bowl-fancy transition-all duration-300">
                     <div id="bowl-content-area"></div>
-                    <div id="bowl-empty-hint" class="absolute inset-0 flex items-center justify-center text-slate-300 font-black text-3xl pointer-events-none opacity-40">
-                        add ingredients
-                    </div>
+                    <div id="bowl-empty-hint" class="absolute inset-0 flex items-center justify-center text-slate-300 font-black text-3xl pointer-events-none opacity-40">add ingredients</div>
                 </div>
             </div>
-            <div class="mt-16 flex gap-8">
-                <button onclick="triggerReset()" class="bg-white border-4 border-slate-300 hover:bg-slate-50 text-slate-400 px-10 py-5 rounded-3xl text-2xl font-black shadow-lg active:scale-95 transition-all">
-                    reset
-                </button>
-                <button id="mix-button" onclick="checkMix()" class="bg-blue-600 hover:bg-blue-700 text-white px-20 py-5 rounded-3xl text-3xl font-black shadow-2xl active:scale-95 transition-all">
-                    mix
-                </button>
+            <div class="mt-12 flex gap-8">
+                <button onclick="triggerReset()" class="bg-white border-4 border-slate-300 hover:bg-slate-50 text-slate-400 px-10 py-4 rounded-3xl text-xl font-black shadow-lg active:scale-95 transition-all">reset</button>
+                <button id="mix-button" onclick="checkMix()" class="bg-blue-600 hover:bg-blue-700 text-white px-20 py-4 rounded-3xl text-2xl font-black shadow-2xl active:scale-95 transition-all">mix</button>
             </div>
         </div>
-
-        <!-- right: ingredient shelf -->
         <div class="w-5/12 bg-white shadow-2xl flex flex-col border-l-4 border-slate-200">
-            <div class="p-6 bg-slate-50 border-b-2 border-slate-100 text-center">
-                <h2 class="text-2xl font-black text-slate-700">ingredient shelf</h2>
-            </div>
-            <div id="ingredients-grid" class="flex-1 p-8 grid grid-cols-2 gap-6 overflow-y-auto no-scrollbar"></div>
+            <div class="p-4 bg-slate-50 border-b-2 border-slate-100 text-center"><h2 class="text-xl font-black text-slate-700">ingredient shelf</h2></div>
+            <div id="ingredients-grid" class="flex-1 p-6 grid grid-cols-2 gap-4 overflow-y-auto no-scrollbar"></div>
         </div>
     </main>
 
-    <!-- quantifier selector modal -->
     <div id="quantifier-modal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-[40px] p-10 max-w-5xl w-full shadow-2xl transform scale-100 border-8 border-slate-100">
-            <div class="text-center mb-8">
-                <span id="modal-icon" class="text-8xl block mb-4"></span>
-                <h3 id="modal-title" class="text-4xl font-black text-slate-800">how much?</h3>
-            </div>
-            <div id="quantifier-grid" class="grid grid-cols-4 gap-4"></div>
-            <button onclick="closeModal()" class="mt-10 w-full py-4 text-slate-400 text-xl font-bold hover:text-slate-600 transition-colors uppercase tracking-widest">
-                go back
-            </button>
+        <div class="bg-white rounded-[40px] p-8 max-w-4xl w-full shadow-2xl border-8 border-slate-100">
+            <div class="text-center mb-6"><span id="modal-icon" class="text-7xl block mb-2"></span><h3 id="modal-title" class="text-3xl font-black text-slate-800">how much?</h3></div>
+            <div id="quantifier-grid" class="grid grid-cols-4 gap-3"></div>
+            <button onclick="closeModal()" class="mt-8 w-full py-3 text-slate-400 text-lg font-bold hover:text-slate-600 transition-colors">go back</button>
         </div>
     </div>
 
     <script>
-        // --- secret recipes & glamorous images ---
-        const secretRecipes = {
-            "french toast": { bread: '2 slices of', milk: '1 glass of', egg: '1', salt: 'a little' },
-            "cupcakes": { flour: '1 bag of', oil: '1 cup of', sugar: 'some', egg: '1' },
-            "brownies": { flour: '1 bowl of', butter: '1 can of', sugar: 'a lot of' },
-            "apple pie": { apple: '2', flour: 'much', salt: 'a little' },
-            "pudding": { milk: '1 bottle of', egg: '2', sugar: 'some' }
+        const recipes = {
+            "french toast": {
+                ingredients: { bread: '2 slices of', milk: '1 glass of', egg: '1', salt: 'a little' },
+                steps: [
+                    { seq: "first", text: "<span class='verb-highlight'>mix</span><span class='cn-hint'>(混合)</span> <span class='ingredient-text'>one glass of milk</span>, <span class='ingredient-text'>one egg</span>, and <span class='ingredient-text'>a little salt</span>." },
+                    { seq: "second", text: "<span class='verb-highlight'>dip</span><span class='cn-hint'>(沾)</span> <span class='ingredient-text'>two slices of bread</span> into the mix." },
+                    { seq: "third", text: "<span class='verb-highlight'>fry</span><span class='cn-hint'>(煎)</span> the bread in a pan until it <span class='verb-highlight'>turns</span><span class='cn-hint'>(變成)</span> yummy." },
+                    { seq: "last", text: "<span class='verb-highlight'>put</span><span class='cn-hint'>(放)</span> the toast on a plate and <span class='verb-highlight'>enjoy</span><span class='cn-hint'>(享受)</span> it!" }
+                ],
+                image: "https://docs.google.com/drawings/d/e/2PACX-1vRgbsgUlpnBjFUiHuZvq-vvbaJ_sKVFJxPOWlmgUSdSwL_l7uV3Wci0wymXP58_P3jSXwv_O5LvmC5_/pub?w=1440&h=1080"
+            },
+            "cupcakes": {
+                ingredients: { flour: '1 bag of', oil: '1 cup of', sugar: 'some', egg: '1' },
+                steps: [
+                    { seq: "first", text: "<span class='verb-highlight'>mix</span><span class='cn-hint'>(混合)</span> <span class='ingredient-text'>one bag of flour</span>, <span class='ingredient-text'>one cup of oil</span>, and <span class='ingredient-text'>some sugar</span>." },
+                    { seq: "second", text: "<span class='verb-highlight'>add</span><span class='cn-hint'>(加入)</span> <span class='ingredient-text'>one egg</span> and <span class='verb-highlight'>mix</span><span class='cn-hint'>(混合)</span> them together." },
+                    { seq: "third", text: "<span class='verb-highlight'>pour</span><span class='cn-hint'>(倒)</span> the yummy mix into small cups." },
+                    { seq: "last", text: "<span class='verb-highlight'>bake</span><span class='cn-hint'>(烤)</span> the cupcakes in the oven for 20 minutes." }
+                ],
+                image: "https://docs.google.com/drawings/d/e/2PACX-1vQw0L0Lrcf3iHo1jeRv5ih09FsE2eOjrieEW4L-ykc2TnG8JYLE9YtRlPTr_-I7hQEnMdX1_e8tGOd_/pub?w=1440&h=1080"
+            },
+            "brownies": {
+                ingredients: { flour: '1 bowl of', butter: '1 can of', sugar: 'a lot of' },
+                steps: [
+                    { seq: "first", text: "<span class='verb-highlight'>melt</span><span class='cn-hint'>(融化)</span> <span class='ingredient-text'>one can of butter</span> in a bowl." },
+                    { seq: "second", text: "<span class='verb-highlight'>mix</span><span class='cn-hint'>(混合)</span> the butter with <span class='ingredient-text'>a lot of sugar</span>." },
+                    { seq: "third", text: "<span class='verb-highlight'>add</span><span class='cn-hint'>(加入)</span> <span class='ingredient-text'>one bowl of flour</span> and <span class='verb-highlight'>stir</span><span class='cn-hint'>(攪拌)</span> everything together." },
+                    { seq: "last", text: "<span class='verb-highlight'>bake</span><span class='cn-hint'>(烤)</span> the brownies so they <span class='verb-highlight'>become</span><span class='cn-hint'>(變成)</span> a great snack." }
+                ],
+                image: "https://docs.google.com/drawings/d/e/2PACX-1vSOgr3s1lqSAJNXyNr7OD-ZDjSCwtMv4-CIbqcvyN24Hs5GsGBbt76eYZAbh2Ps2FaE2XdOLEgnwbnK/pub?w=1440&h=1080"
+            },
+            "apple pie": {
+                ingredients: { apple: '2', flour: 'much', salt: 'a little' },
+                steps: [
+                    { seq: "first", text: "<span class='verb-highlight'>cut</span><span class='cn-hint'>(切)</span> <span class='ingredient-text'>two apples</span> into small pieces." },
+                    { seq: "second", text: "<span class='verb-highlight'>mix</span><span class='cn-hint'>(混合)</span> the apples with <span class='ingredient-text'>much flour</span> and <span class='ingredient-text'>a little salt</span>." },
+                    { seq: "third", text: "<span class='verb-highlight'>put</span><span class='cn-hint'>(放)</span> the yummy mix into the pie crust (派皮)." },
+                    { seq: "last", text: "<span class='verb-highlight'>bake</span><span class='cn-hint'>(烤)</span> the apple pie in the oven." }
+                ],
+                image: "https://docs.google.com/drawings/d/e/2PACX-1vQ9rGzD_b-1mhHYbmZyWvOw4bpNfsXhyS6siCeNkZxF1QAbImjJnfrM0v3vVgVsKM-FiKeb6VBHknDC/pub?w=1440&h=1080"
+            },
+            "pudding": {
+                ingredients: { milk: '1 bottle of', egg: '2', sugar: 'some' },
+                steps: [
+                    { seq: "first", text: "<span class='verb-highlight'>mix</span><span class='cn-hint'>(混合)</span> <span class='ingredient-text'>one bottle of milk</span> and <span class='ingredient-text'>two eggs</span> together." },
+                    { seq: "second", text: "<span class='verb-highlight'>add</span><span class='cn-hint'>(加入)</span> <span class='ingredient-text'>some sugar</span> and <span class='verb-highlight'>stir</span><span class='cn-hint'>(攪拌)</span> the mix well." },
+                    { seq: "third", text: "<span class='verb-highlight'>pour</span><span class='cn-hint'>(倒)</span> the mix into a small bowl." },
+                    { seq: "last", text: "<span class='verb-highlight'>cook</span><span class='cn-hint'>(煮)</span> the pudding and <span class='verb-highlight'>wait</span><span class='cn-hint'>(等待)</span> for it to <span class='verb-highlight'>cool down</span><span class='cn-hint'>(冷卻)</span>." }
+                ],
+                image: "https://docs.google.com/drawings/d/e/2PACX-1vSBFjDouEmTqWlyrOnG_7EafnR82FLdMmwCCyv0xP4KjT130zHjFeEMrcawJ8BuYhYpdr8mhmfng9_Q/pub?w=1440&h=1080"
+            }
         };
 
-        const dessertImages = {
-            "french toast": "https://docs.google.com/drawings/d/e/2PACX-1vRgbsgUlpnBjFUiHuZvq-vvbaJ_sKVFJxPOWlmgUSdSwL_l7uV3Wci0wymXP58_P3jSXwv_O5LvmC5_/pub?w=1440&h=1080",
-            "pudding": "https://docs.google.com/drawings/d/e/2PACX-1vSBFjDouEmTqWlyrOnG_7EafnR82FLdMmwCCyv0xP4KjT130zHjFeEMrcawJ8BuYhYpdr8mhmfng9_Q/pub?w=1440&h=1080",
-            "apple pie": "https://docs.google.com/drawings/d/e/2PACX-1vQ9rGzD_b-1mhHYbmZyWvOw4bpNfsXhyS6siCeNkZxF1QAbImjJnfrM0v3vVgVsKM-FiKeb6VBHknDC/pub?w=1440&h=1080",
-            "brownies": "https://docs.google.com/drawings/d/e/2PACX-1vSOgr3s1lqSAJNXyNr7OD-ZDjSCwtMv4-CIbqcvyN24Hs5GsGBbt76eYZAbh2Ps2FaE2XdOLEgnwbnK/pub?w=1440&h=1080",
-            "cupcakes": "https://docs.google.com/drawings/d/e/2PACX-1vQw0L0Lrcf3iHo1jeRv5ih09FsE2eOjrieEW4L-ykc2TnG8JYLE9YtRlPTr_-I7hQEnMdX1_e8tGOd_/pub?w=1440&h=1080"
-        };
-
-        const ingredients = [
+        const ingredientsList = [
             { id: 'bread', label: 'bread', icon: '🍞', type: 'uncountable' },
             { id: 'flour', label: 'flour', icon: '🌾', type: 'uncountable' },
             { id: 'sugar', label: 'sugar', icon: '🍬', type: 'uncountable' },
@@ -265,21 +341,21 @@
             'a little': '🤏', 'some': '☁️', 'a lot of': '🌊', 'much': '🌊'
         };
 
-        const numbers = ['1', '2', '3'];
-        const quantifiers = ['slice', 'bag', 'glass', 'cup', 'bottle', 'tub', 'bowl', 'can'];
-        const indefinite = ['a little', 'some', 'a lot of', 'much'];
-
         let bowlData = {}; 
         let bowlRawData = []; 
         let tempNumber = null;
+        let activeDessert = null; 
+        let currentRecipeKey = null;
+        let currentSelections = {}; 
 
         function init() {
             const grid = document.getElementById('ingredients-grid');
-            ingredients.forEach(ing => {
+            grid.innerHTML = '';
+            ingredientsList.forEach(ing => {
                 const btn = document.createElement('button');
-                btn.className = "ingredient-btn bg-slate-50 border-4 border-slate-200 rounded-[32px] p-8 flex flex-col items-center justify-center shadow-lg hover:border-blue-400 hover:shadow-blue-100 transition-all";
+                btn.className = "ingredient-btn bg-slate-50 border-4 border-slate-200 rounded-[32px] p-6 flex flex-col items-center justify-center shadow-md hover:border-blue-400 transition-all";
                 btn.onclick = () => openModal(ing);
-                btn.innerHTML = `<span class="text-7xl mb-4">${ing.icon}</span><span class="text-2xl font-black text-slate-700">${ing.label}</span>`;
+                btn.innerHTML = `<span class="text-6xl mb-2">${ing.icon}</span><span class="text-xl font-black text-slate-700">${ing.label}</span>`;
                 grid.appendChild(btn);
             });
         }
@@ -293,7 +369,7 @@
 
             if (ing.type === 'countable') {
                 document.getElementById('modal-title').innerText = `how many ${ing.label}s do you want?`;
-                numbers.forEach(num => {
+                ['1', '2', '3'].forEach(num => {
                     const card = createModalCard(num, '');
                     card.onclick = () => addToBowl(ing, num, num);
                     qGrid.appendChild(card);
@@ -302,19 +378,19 @@
                 if (stage === 'start') {
                     tempNumber = null;
                     document.getElementById('modal-title').innerText = `how much ${ing.label} do you want?`;
-                    numbers.forEach(num => {
+                    ['1', '2', '3'].forEach(num => {
                         const card = createModalCard(num, '');
                         card.onclick = () => { tempNumber = num; openModal(ing, 'quantifier'); };
                         qGrid.appendChild(card);
                     });
-                    indefinite.forEach(opt => {
+                    ['a little', 'some', 'a lot of', 'much'].forEach(opt => {
                         const card = createModalCard('', opt, qIcons[opt]);
                         card.onclick = () => addToBowl(ing, opt, opt);
                         qGrid.appendChild(card);
                     });
                 } else {
                     document.getElementById('modal-title').innerText = `${tempNumber} ... of ${ing.label}?`;
-                    quantifiers.forEach(q => {
+                    ['slice', 'bag', 'glass', 'cup', 'bottle', 'tub', 'bowl', 'can'].forEach(q => {
                         const card = createModalCard('', q, qIcons[q]);
                         card.onclick = () => {
                             const val = `${tempNumber} ${q}${tempNumber > 1 ? 's' : ''} of`;
@@ -328,15 +404,8 @@
 
         function createModalCard(numLabel, textLabel, emojiIcon) {
             const card = document.createElement('button');
-            card.className = "ingredient-btn bg-slate-50 border-4 border-slate-200 rounded-3xl p-4 flex flex-col items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-all";
-            
-            let content = "";
-            if (numLabel) {
-                content = `<div class="num-circle">${numLabel}</div>`;
-            } else {
-                content = `<span class="text-4xl mb-2">${emojiIcon}</span><span class="text-sm font-black text-slate-700 leading-tight">${textLabel}</span>`;
-            }
-            
+            card.className = "ingredient-btn bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center hover:border-blue-500 transition-all";
+            let content = numLabel ? `<div class="num-circle">${numLabel}</div>` : `<span class="text-3xl mb-1">${emojiIcon}</span><span class="text-xs font-black text-slate-700 leading-tight">${textLabel}</span>`;
             card.innerHTML = content;
             return card;
         }
@@ -345,50 +414,38 @@
             const readable = ing.type === 'countable' ? `${value} ${ing.label}${value > 1 ? 's' : ''}` : `${display} ${ing.label}`;
             bowlData[ing.id] = value;
             bowlRawData.push(readable);
-
             document.getElementById('main-display').innerText = readable;
             document.getElementById('sub-display').innerText = "added!";
             document.getElementById('bowl-empty-hint').style.display = 'none';
-
             const area = document.getElementById('bowl-content-area');
             const visual = document.createElement('div');
             visual.className = 'ingredient-in-bowl';
             visual.innerText = ing.icon;
             area.appendChild(visual);
             closeModal();
-            
             const bowl = document.getElementById('main-bowl');
             bowl.classList.remove('success-bowl', 'error-bowl');
-            bowl.style.transform = "scale(1.02)";
-            setTimeout(() => bowl.style.transform = "scale(1)", 100);
         }
 
         function checkMix() {
             const bowl = document.getElementById('main-bowl');
             const bowlKeys = Object.keys(bowlData).filter(k => bowlData[k] !== undefined);
             if (bowlKeys.length === 0) return;
-
-            let foundDessert = null;
-            for (const [name, recipe] of Object.entries(secretRecipes)) {
-                const recipeKeys = Object.keys(recipe);
+            let foundKey = null;
+            for (const [name, recipe] of Object.entries(recipes)) {
+                const recipeKeys = Object.keys(recipe.ingredients);
                 if (recipeKeys.length === bowlKeys.length) {
                     let match = true;
                     for (const key of recipeKeys) {
-                        if (bowlData[key] !== recipe[key]) { match = false; break; }
+                        if (bowlData[key] !== recipe.ingredients[key]) { match = false; break; }
                     }
-                    if (match) { foundDessert = name; break; }
+                    if (match) { foundKey = name; break; }
                 }
             }
-
-            if (foundDessert) {
-                let listStr = bowlRawData.join(", ");
-                const lastComma = listStr.lastIndexOf(", ");
-                if (lastComma !== -1) listStr = listStr.substring(0, lastComma) + " and " + listStr.substring(lastComma + 2);
-                
-                document.getElementById('success-food-img').src = dessertImages[foundDessert];
-                document.getElementById('success-message').innerText = `${listStr} turn into a ${foundDessert}!`;
-                document.getElementById('success-overlay').style.display = 'flex';
-                bowl.classList.add('success-bowl');
+            if (foundKey) {
+                currentRecipeKey = foundKey;
+                activeDessert = recipes[foundKey];
+                startSequencePhase();
             } else {
                 document.getElementById('error-overlay').style.display = 'flex';
                 bowl.classList.add('error-bowl');
@@ -396,20 +453,117 @@
             }
         }
 
+        function startSequencePhase() {
+            if (!activeDessert) return;
+            const overlay = document.getElementById('sequence-overlay');
+            const labelsContainer = document.getElementById('sequence-labels');
+            const listContainer = document.getElementById('sequence-list');
+            
+            overlay.style.display = 'flex';
+            labelsContainer.innerHTML = '';
+            listContainer.innerHTML = '';
+            currentSelections = {};
+            currentlySelectedLabel = null;
+            
+            const labels = ["first", "second", "third", "last"];
+            labels.sort(() => Math.random() - 0.5);
+            labels.forEach((label, idx) => {
+                const pill = document.createElement('div');
+                pill.className = "label-pill";
+                pill.innerText = label;
+                pill.dataset.labelId = idx;
+                pill.onclick = () => selectLabel(pill);
+                labelsContainer.appendChild(pill);
+            });
+            const scrambledSteps = [...activeDessert.steps].sort(() => Math.random() - 0.5);
+            scrambledSteps.forEach((step, idx) => {
+                const card = document.createElement('div');
+                card.className = "step-card";
+                card.innerHTML = `<div class="step-slot" onclick="handleSlotClick(this, ${idx})">tap slot</div><div class="step-text">${step.text}</div>`;
+                card.dataset.correctSeq = step.seq;
+                listContainer.appendChild(card);
+            });
+        }
+
+        let currentlySelectedLabel = null;
+        function selectLabel(el) {
+            if (currentlySelectedLabel) currentlySelectedLabel.classList.remove('ring-4', 'ring-yellow-400');
+            currentlySelectedLabel = el;
+            el.classList.add('ring-4', 'ring-yellow-400');
+        }
+
+        function handleSlotClick(slot, idx) {
+            if (slot.dataset.filledLabelId !== undefined) {
+                const labelId = slot.dataset.filledLabelId;
+                const originalPill = document.querySelector(`.label-pill[data-label-id="${labelId}"]`);
+                if (originalPill) { 
+                    originalPill.style.opacity = '1'; 
+                    originalPill.style.pointerEvents = 'auto'; 
+                }
+                slot.innerText = "tap slot";
+                slot.classList.remove('bg-blue-600', 'text-white');
+                delete slot.dataset.filledLabelId;
+                delete currentSelections[idx];
+            }
+            if (currentlySelectedLabel) {
+                slot.innerText = currentlySelectedLabel.innerText;
+                slot.classList.add('bg-blue-600', 'text-white');
+                slot.dataset.filledLabelId = currentlySelectedLabel.dataset.labelId;
+                currentSelections[idx] = currentlySelectedLabel.innerText;
+                currentlySelectedLabel.style.opacity = '0.3';
+                currentlySelectedLabel.style.pointerEvents = 'none';
+                currentlySelectedLabel.classList.remove('ring-4', 'ring-yellow-400');
+                currentlySelectedLabel = null;
+            }
+        }
+
+        function checkSequence() {
+            const slots = document.querySelectorAll('.step-card');
+            let allFilled = true;
+            slots.forEach((card, idx) => { if (!currentSelections[idx]) allFilled = false; });
+            if (!allFilled) return;
+
+            let allCorrect = true;
+            slots.forEach((card, idx) => {
+                const selected = currentSelections[idx];
+                const correct = card.dataset.correctSeq;
+                if (selected !== correct) { allCorrect = false; card.style.borderColor = "#ef4444"; }
+                else { card.style.borderColor = "#22c55e"; }
+            });
+            if (allCorrect) { showFinalGlory(); } 
+            else { 
+                setTimeout(() => { slots.forEach(card => card.style.borderColor = "#cbd5e1"); }, 1500); 
+            }
+        }
+
+        function showFinalGlory() {
+            if (!activeDessert) return;
+            document.getElementById('sequence-overlay').style.display = 'none';
+            const overlay = document.getElementById('success-overlay');
+            const isApplePie = currentRecipeKey === "apple pie";
+            document.getElementById('success-food-img').src = activeDessert.image;
+            let listStr = bowlRawData.join(", ");
+            const lastComma = listStr.lastIndexOf(", ");
+            if (lastComma !== -1) listStr = listStr.substring(0, lastComma) + " and " + listStr.substring(lastComma + 2);
+            document.getElementById('success-message').innerText = `${listStr} turn into a ${currentRecipeKey}!`;
+            const bonus = document.getElementById('popcorn-bonus');
+            if (isApplePie) bonus.classList.remove('hidden');
+            else bonus.classList.add('hidden');
+            overlay.style.display = 'flex';
+        }
+
         function triggerReset() {
             const overlay = document.getElementById('reset-overlay');
             overlay.style.display = 'flex';
-            overlay.style.opacity = '0';
-            setTimeout(() => overlay.style.opacity = '1', 10);
-            setTimeout(() => {
-                resetBowlData();
-                overlay.style.opacity = '0';
-                setTimeout(() => overlay.style.display = 'none', 300);
+            setTimeout(() => { 
+                resetBowlData(); 
+                overlay.style.display = 'none'; 
+                document.getElementById('sequence-overlay').style.display = 'none'; 
             }, 1200);
         }
 
         function resetBowlData() {
-            bowlData = {}; bowlRawData = [];
+            bowlData = {}; bowlRawData = []; activeDessert = null; currentRecipeKey = null;
             document.getElementById('bowl-content-area').innerHTML = '';
             document.getElementById('bowl-empty-hint').style.display = 'flex';
             document.getElementById('main-display').innerText = "kitchen challenge";
@@ -418,7 +572,14 @@
         }
 
         function closeModal() { document.getElementById('quantifier-modal').classList.add('hidden'); }
-        init();
+        
+        window.onload = function() {
+            document.getElementById('sequence-overlay').style.display = 'none';
+            document.getElementById('reset-overlay').style.display = 'none';
+            document.getElementById('error-overlay').style.display = 'none';
+            document.getElementById('success-overlay').style.display = 'none';
+            init();
+        };
     </script>
 </body>
 </html>
