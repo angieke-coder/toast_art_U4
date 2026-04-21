@@ -186,8 +186,8 @@
         .cn-hint { font-size: 0.9rem; color: #64748b; font-weight: 500; margin-left: 1px; }
 
         .quantifier-img {
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             object-fit: contain;
         }
     </style>
@@ -303,7 +303,7 @@
                     { seq: "third", text: "<span class='verb-highlight'>put</span><span class='cn-hint'>(放)</span> the yummy mix into the pie crust (派皮)." },
                     { seq: "last", text: "<span class='verb-highlight'>bake</span><span class='cn-hint'>(烤)</span> the apple pie in the oven." }
                 ],
-                image: "https://docs.google.com/drawings/d/e/2PACX-1vQ9rGzD_b-1mhHYbmZyWvOw4bpNfsXhyS6siCeNkZxF1QAbImjJnfrM0v3vVgVsKM-FiKeb6VBHknDC/pub?w=1440&h=1080"
+                image: "https://docs.google.com/drawings/d/e/2PACX-1vSBFjDouEmTqWlyrOnG_7EafnR82FLdMmwCCyv0xP4KjT130zHjFeEMrcawJ8BuYhYpdr8mhmfng9_Q/pub?w=1440&h=1080"
             },
             "pudding": {
                 ingredients: { water: '1 bottle of', milk: '2 glasses of', egg: '2', sugar: 'some' },
@@ -320,20 +320,19 @@
         const resultNames = { "french toast": "french toast", "cupcakes": "cupcakes", "brownies": "brownies", "apple pie": "an apple pie", "pudding": "pudding" };
 
         const ingredientsList = [
-            { id: 'bread', label: 'bread', icon: '🍞', type: 'uncountable' },
-            { id: 'flour', label: 'flour', icon: '🌾', type: 'uncountable' },
-            { id: 'sugar', label: 'sugar', icon: '🍬', type: 'uncountable' },
-            { id: 'salt', label: 'salt', icon: '🧂', type: 'uncountable' },
-            { id: 'milk', label: 'milk', icon: '🥛', type: 'uncountable' },
-            { id: 'butter', label: 'butter', icon: '🧈', type: 'uncountable' },
-            { id: 'oil', label: 'oil', icon: '🥃', type: 'uncountable' },
-            { id: 'water', label: 'water', icon: '💧', type: 'uncountable' },
-            { id: 'chocolate', label: 'chocolate', icon: '🍫', type: 'uncountable' },
-            { id: 'egg', label: 'egg', icon: '🥚', type: 'countable' },
-            { id: 'apple', label: 'apple', icon: '🍎', type: 'countable' }
+            { id: 'bread', icon: '🍞', type: 'uncountable' },
+            { id: 'flour', icon: '🌾', type: 'uncountable' },
+            { id: 'sugar', icon: '🍬', type: 'uncountable' },
+            { id: 'salt', icon: '🧂', type: 'uncountable' },
+            { id: 'milk', icon: '🥛', type: 'uncountable' },
+            { id: 'butter', icon: '🧈', type: 'uncountable' },
+            { id: 'oil', icon: '🥃', type: 'uncountable' },
+            { id: 'water', icon: '💧', type: 'uncountable' },
+            { id: 'chocolate', icon: '🍫', type: 'uncountable' },
+            { id: 'egg', icon: '🥚', type: 'countable' },
+            { id: 'apple', icon: '🍎', type: 'countable' }
         ];
 
-        // Updated with URL mappings
         const qIcons = { 
             'slice': 'https://png.pngtree.com/png-vector/20240517/ourmid/pngtree-essential-features-of-a-high-quality-stainless-steel-kitchen-knife-comparing-png-image_12485923.png', 
             'bag': 'https://static.vecteezy.com/system/resources/previews/071/294/942/non_2x/empty-burlap-sack-isolated-on-transparent-background-png.png', 
@@ -357,7 +356,7 @@
                 const btn = document.createElement('button');
                 btn.className = "ingredient-btn bg-white border-4 border-slate-200 rounded-[24px] p-4 flex flex-col items-center justify-center shadow-sm hover:border-blue-400 transition-all";
                 btn.onclick = () => openModal(ing);
-                btn.innerHTML = `<span class="text-5xl mb-1">${ing.icon}</span><span class="text-lg font-black text-slate-700">${ing.label}</span>`;
+                btn.innerHTML = `<span class="text-6xl">${ing.icon}</span>`; // removed label
                 grid.appendChild(btn);
             });
         }
@@ -366,23 +365,23 @@
             const modal = document.getElementById('quantifier-modal'); const qGrid = document.getElementById('quantifier-grid');
             document.getElementById('modal-icon').innerText = ing.icon; modal.classList.remove('hidden'); qGrid.innerHTML = '';
             if (ing.type === 'countable') {
-                document.getElementById('modal-title').innerText = `how many ${ing.label}s?`;
+                document.getElementById('modal-title').innerText = `how many?`;
                 ['1', '2', '3'].forEach(num => {
-                    const card = createModalCard(num, ''); card.onclick = () => addToBowl(ing, num, num); qGrid.appendChild(card);
+                    const card = createModalCard(num, '', ''); card.onclick = () => addToBowl(ing, num, num); qGrid.appendChild(card);
                 });
             } else {
                 if (stage === 'start') {
-                    tempNumber = null; document.getElementById('modal-title').innerText = `how much ${ing.label}?`;
+                    tempNumber = null; document.getElementById('modal-title').innerText = `how much?`;
                     ['1', '2', '3'].forEach(num => {
-                        const card = createModalCard(num, ''); card.onclick = () => { tempNumber = num; openModal(ing, 'quantifier'); }; qGrid.appendChild(card);
+                        const card = createModalCard(num, '', ''); card.onclick = () => { tempNumber = num; openModal(ing, 'quantifier'); }; qGrid.appendChild(card);
                     });
                     ['a little', 'some', 'a lot of / much'].forEach(opt => {
                         const card = createModalCard('', opt, qIcons[opt]); card.onclick = () => addToBowl(ing, opt, opt); qGrid.appendChild(card);
                     });
                 } else {
-                    document.getElementById('modal-title').innerText = `${tempNumber} ... of ${ing.label}?`;
+                    document.getElementById('modal-title').innerText = `pick a container`;
                     ['slice', 'bag', 'glass', 'cup', 'bottle', 'tub', 'bowl', 'can'].forEach(q => {
-                        const card = createModalCard('', q, qIcons[q]);
+                        const card = createModalCard('', q, qIcons[q]); // flag to hide text will be in createModalCard
                         card.onclick = () => {
                             let unit = q;
                             if (tempNumber > 1) {
@@ -406,11 +405,15 @@
                 content = `<div class="num-circle">${numLabel}</div>`;
             } else {
                 if (contentSrc.startsWith('http')) {
-                    content = `<img src="${contentSrc}" class="quantifier-img mb-1" alt="${textLabel}">`;
+                    content = `<img src="${contentSrc}" class="quantifier-img" alt="${textLabel}">`;
                 } else {
-                    content = `<span class="text-3xl mb-1">${contentSrc}</span>`;
+                    content = `<span class="text-4xl mb-1">${contentSrc}</span>`;
                 }
-                content += `<span class="text-[10px] font-black text-slate-700 leading-tight">${textLabel}</span>`;
+                
+                // Show text only for special quantifiers
+                if (['a little', 'some', 'a lot of / much'].includes(textLabel)) {
+                    content += `<span class="text-[10px] font-black text-slate-700 leading-tight mt-1">${textLabel}</span>`;
+                }
             }
             
             card.innerHTML = content; return card;
@@ -418,7 +421,7 @@
 
         function addToBowl(ing, value, display) {
             historyStack.push({ bowlData: JSON.parse(JSON.stringify(bowlData)), bowlRawData: [...bowlRawData], mainDisplayText: document.getElementById('main-display').innerText });
-            const readable = ing.type === 'countable' ? `${value} ${ing.label}${value > 1 ? 's' : ''}` : `${display} ${ing.label}`;
+            const readable = ing.type === 'countable' ? `${value} ${ing.id}${value > 1 ? 's' : ''}` : `${display} ${ing.id}`;
             bowlData[ing.id] = value; bowlRawData.push(readable);
             document.getElementById('main-display').innerText = readable;
             document.getElementById('bowl-empty-hint').style.display = 'none';
