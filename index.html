@@ -83,7 +83,7 @@
         
         #sequence-overlay { 
             background: white; 
-            padding: 1.5rem; 
+            padding: 1rem 1.5rem; 
             justify-content: flex-start; 
             overflow-y: hidden;
         }
@@ -126,7 +126,6 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* forced lowercase for English, doesn't affect Chinese */
         * { text-transform: lowercase !important; }
 
         .num-circle {
@@ -142,31 +141,30 @@
             font-weight: 900;
         }
 
-        /* sequence matching styles */
         .step-card {
             background: white;
             border: 3px dashed #cbd5e1;
-            border-radius: 15px;
-            padding: 10px 15px;
+            border-radius: 12px;
+            padding: 8px 15px;
             width: 90%;
             max-width: 1000px;
             display: flex;
             align-items: center;
-            gap: 15px;
-            margin-bottom: 8px;
+            gap: 12px;
+            margin-bottom: 6px;
             transition: all 0.3s;
         }
         .step-slot {
             width: 110px;
-            height: 50px;
+            height: 45px;
             background: #f1f5f9;
             border: 2px solid #e2e8f0;
-            border-radius: 12px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 900;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: #64748b;
             cursor: pointer;
             flex-shrink: 0;
@@ -174,97 +172,94 @@
         .label-pill {
             background: #3b82f6;
             color: white;
-            padding: 8px 20px;
+            padding: 6px 18px;
             border-radius: 50px;
             font-weight: 900;
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 3px 5px rgba(0,0,0,0.1);
         }
-        .step-text { font-size: 1.15rem; font-weight: 600; color: #334155; text-align: left; line-height: 1.3; }
+        .step-text { font-size: 1.1rem; font-weight: 600; color: #334155; text-align: left; line-height: 1.2; }
         
-        /* Highlighting ingredients in red */
         .ingredient-text { color: #dc2626 !important; font-weight: 800; }
-        /* Highlighting verbs for clarity */
         .verb-highlight { color: #2563eb !important; font-weight: 800; }
-        .cn-hint { font-size: 0.95rem; color: #64748b; font-weight: 500; margin-left: 2px; }
+        .cn-hint { font-size: 0.9rem; color: #64748b; font-weight: 500; margin-left: 1px; }
+
+        .quantifier-img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+        }
     </style>
 </head>
 <body class="bg-slate-100 h-screen w-screen overflow-hidden flex flex-col font-sans select-none text-slate-800">
 
-    <!-- reset overlay -->
+    <!-- overlays -->
     <div id="reset-overlay" class="fs-overlay">
         <div class="big-icon animate-spin">🔃</div>
-        <div class="text-5xl font-black mt-8 text-slate-600">resetting the kitchen...</div>
+        <div class="text-4xl font-black mt-6 text-slate-600">resetting the kitchen...</div>
     </div>
 
-    <!-- error overlay -->
     <div id="error-overlay" class="fs-overlay" onclick="this.style.display='none'">
-        <div class="flex gap-8 mb-8">
+        <div class="flex gap-6 mb-6">
             <div class="big-icon animate-bounce">🚮</div>
             <div class="big-icon animate-bounce" style="animation-delay: 0.1s">🗑️</div>
             <div class="big-icon animate-bounce" style="animation-delay: 0.2s">❌</div>
         </div>
-        <div class="flex gap-8">
-            <div class="big-icon animate-pulse text-red-600">🥀</div>
-            <div class="big-icon animate-pulse text-red-600" style="animation-delay: 0.3s">🚨</div>
-        </div>
-        <div class="text-6xl font-black mt-12 text-red-600">wrong mix! try again!</div>
+        <div class="flex gap-6"><div class="big-icon animate-pulse text-red-600">🥀</div><div class="big-icon animate-pulse text-red-600" style="animation-delay: 0.3s">🚨</div></div>
+        <div class="text-5xl font-black mt-8 text-red-600">wrong mix! try again!</div>
     </div>
 
-    <!-- success overlay -->
     <div id="success-overlay" class="fs-overlay" onclick="this.style.display='none'">
         <div class="sparkle-bg"></div>
         <div class="relative z-10 flex flex-col items-center justify-center w-full">
-            <img id="success-food-img" class="glamorous-img mb-6" src="" alt="food reward">
-            <div id="success-message" class="text-3xl font-black text-slate-800 max-w-5xl leading-tight px-10"></div>
-            <div id="popcorn-bonus" class="text-2xl font-bold text-blue-600 mt-2 hidden italic">enjoy it with a tub of popcorn!</div>
-            <div class="text-xl font-bold mt-6 text-amber-600 animate-bounce">perfect work of art! tap to close!</div>
+            <img id="success-food-img" class="glamorous-img mb-4" src="" alt="food reward">
+            <div id="success-message" class="text-2xl font-black text-slate-800 max-w-5xl leading-tight px-10"></div>
+            <div id="popcorn-bonus" class="text-xl font-bold text-blue-600 mt-2 hidden italic">enjoy it with a tub of popcorn!</div>
+            <div class="text-lg font-bold mt-4 text-amber-600 animate-bounce">perfect work of art! tap to close!</div>
         </div>
     </div>
 
-    <!-- sequence phase overlay -->
     <div id="sequence-overlay" class="fs-overlay">
-        <h2 class="text-3xl font-black text-blue-600 mb-2">step matching challenge!</h2>
-        <p class="text-slate-400 mb-3">tap a blue label then tap a gray slot</p>
+        <h2 class="text-2xl font-black text-blue-600 mb-1">step matching challenge!</h2>
+        <p class="text-slate-400 mb-3 text-sm">tap a blue label then tap a gray slot</p>
         <div id="sequence-labels" class="flex gap-3 mb-4 flex-wrap justify-center"></div>
         <div id="sequence-list" class="w-full flex flex-col items-center"></div>
-        <button id="check-steps-btn" onclick="checkSequence()" class="mt-4 bg-green-500 text-white px-12 py-3 rounded-2xl text-2xl font-black shadow-xl active:scale-95 transition-all">check steps</button>
+        <button id="check-steps-btn" onclick="checkSequence()" class="mt-3 bg-green-500 text-white px-10 py-2 rounded-xl text-xl font-black shadow-lg active:scale-95 transition-all">check steps</button>
     </div>
 
     <!-- header -->
-    <header class="h-20 bg-white shadow-sm flex items-center justify-between px-12 border-b-2 border-slate-200 shrink-0">
+    <header class="h-16 bg-white shadow-sm flex items-center justify-between px-12 border-b-2 border-slate-200 shrink-0">
         <div class="flex flex-col">
-            <h1 id="main-display" class="text-2xl font-black text-blue-600 leading-tight">kitchen challenge</h1>
-            <p id="sub-display" class="text-sm text-slate-500 font-bold italic">can the class guess what you are making?</p>
+            <h1 id="main-display" class="text-xl font-black text-blue-600 leading-tight">kitchen challenge</h1>
+            <p id="sub-display" class="text-xs text-slate-500 font-bold italic">can the class guess what you are making?</p>
         </div>
-        <div class="bg-blue-100 text-blue-700 px-4 py-1 rounded-full font-black text-lg">5 secret recipes</div>
+        <div class="bg-blue-100 text-blue-700 px-4 py-1 rounded-full font-black text-base">5 secret recipes</div>
     </header>
 
     <main id="game-container" class="flex flex-1 overflow-hidden">
-        <div class="w-7/12 flex flex-col items-center justify-center p-8 relative bg-slate-50">
-            <div class="relative">
-                <div id="main-bowl" class="bowl-fancy transition-all duration-300">
-                    <div id="bowl-content-area"></div>
-                    <div id="bowl-empty-hint" class="absolute inset-0 flex items-center justify-center text-slate-300 font-black text-3xl pointer-events-none opacity-40">add ingredients</div>
-                </div>
+        <div class="w-7/12 flex flex-col items-center justify-center p-6 relative bg-slate-50">
+            <div id="main-bowl" class="bowl-fancy transition-all duration-300">
+                <div id="bowl-content-area"></div>
+                <div id="bowl-empty-hint" class="absolute inset-0 flex items-center justify-center text-slate-300 font-black text-2xl pointer-events-none opacity-40">add ingredients</div>
             </div>
-            <div class="mt-12 flex gap-8">
-                <button onclick="triggerReset()" class="bg-white border-4 border-slate-300 hover:bg-slate-50 text-slate-400 px-10 py-4 rounded-3xl text-xl font-black shadow-lg active:scale-95 transition-all">reset</button>
-                <button id="mix-button" onclick="checkMix()" class="bg-blue-600 hover:bg-blue-700 text-white px-20 py-4 rounded-3xl text-2xl font-black shadow-2xl active:scale-95 transition-all">mix</button>
+            <div class="mt-8 flex gap-4">
+                <button onclick="triggerReset()" class="bg-white border-4 border-slate-300 hover:bg-slate-50 text-slate-400 px-6 py-3 rounded-2xl text-lg font-black shadow active:scale-95 transition-all">reset</button>
+                <button onclick="undoLastIngredient()" class="bg-white border-4 border-amber-400 hover:bg-amber-50 text-amber-500 px-6 py-3 rounded-2xl text-lg font-black shadow active:scale-95 transition-all">undo ↩️</button>
+                <button id="mix-button" onclick="checkMix()" class="bg-blue-600 hover:bg-blue-700 text-white px-12 py-3 rounded-2xl text-2xl font-black shadow-xl active:scale-95 transition-all">mix</button>
             </div>
         </div>
         <div class="w-5/12 bg-white shadow-2xl flex flex-col border-l-4 border-slate-200">
-            <div class="p-4 bg-slate-50 border-b-2 border-slate-100 text-center"><h2 class="text-xl font-black text-slate-700">ingredient shelf</h2></div>
-            <div id="ingredients-grid" class="flex-1 p-6 grid grid-cols-2 gap-4 overflow-y-auto no-scrollbar"></div>
+            <div class="p-3 bg-slate-50 border-b-2 border-slate-100 text-center"><h2 class="text-lg font-black text-slate-700">ingredient shelf</h2></div>
+            <div id="ingredients-grid" class="flex-1 p-4 grid grid-cols-2 gap-3 overflow-y-auto no-scrollbar"></div>
         </div>
     </main>
 
     <div id="quantifier-modal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-[40px] p-8 max-w-4xl w-full shadow-2xl border-8 border-slate-100">
-            <div class="text-center mb-6"><span id="modal-icon" class="text-7xl block mb-2"></span><h3 id="modal-title" class="text-3xl font-black text-slate-800">how much?</h3></div>
+        <div class="bg-white rounded-[32px] p-6 max-w-4xl w-full shadow-2xl border-4 border-slate-100">
+            <div class="text-center mb-4"><span id="modal-icon" class="text-6xl block mb-1"></span><h3 id="modal-title" class="text-2xl font-black text-slate-800">how much?</h3></div>
             <div id="quantifier-grid" class="grid grid-cols-4 gap-3"></div>
-            <button onclick="closeModal()" class="mt-8 w-full py-3 text-slate-400 text-lg font-bold hover:text-slate-600 transition-colors">go back</button>
+            <button onclick="closeModal()" class="mt-6 w-full py-2 text-slate-400 text-base font-bold hover:text-slate-600 transition-colors">go back</button>
         </div>
     </div>
 
@@ -291,29 +286,29 @@
                 image: "https://docs.google.com/drawings/d/e/2PACX-1vQw0L0Lrcf3iHo1jeRv5ih09FsE2eOjrieEW4L-ykc2TnG8JYLE9YtRlPTr_-I7hQEnMdX1_e8tGOd_/pub?w=1440&h=1080"
             },
             "brownies": {
-                ingredients: { flour: '1 bowl of', butter: '1 can of', sugar: 'a lot of' },
+                ingredients: { flour: '1 bowl of', butter: '1 can of', sugar: 'a lot of / much', chocolate: 'some' },
                 steps: [
                     { seq: "first", text: "<span class='verb-highlight'>melt</span><span class='cn-hint'>(融化)</span> <span class='ingredient-text'>one can of butter</span> in a bowl." },
-                    { seq: "second", text: "<span class='verb-highlight'>mix</span><span class='cn-hint'>(混合)</span> the butter with <span class='ingredient-text'>a lot of sugar</span>." },
+                    { seq: "second", text: "<span class='verb-highlight'>mix</span><span class='cn-hint'>(混合)</span> the butter with <span class='ingredient-text'>a lot of sugar</span> and <span class='ingredient-text'>some chocolate</span>." },
                     { seq: "third", text: "<span class='verb-highlight'>add</span><span class='cn-hint'>(加入)</span> <span class='ingredient-text'>one bowl of flour</span> and <span class='verb-highlight'>stir</span><span class='cn-hint'>(攪拌)</span> everything together." },
                     { seq: "last", text: "<span class='verb-highlight'>bake</span><span class='cn-hint'>(烤)</span> the brownies so they <span class='verb-highlight'>become</span><span class='cn-hint'>(變成)</span> a great snack." }
                 ],
                 image: "https://docs.google.com/drawings/d/e/2PACX-1vSOgr3s1lqSAJNXyNr7OD-ZDjSCwtMv4-CIbqcvyN24Hs5GsGBbt76eYZAbh2Ps2FaE2XdOLEgnwbnK/pub?w=1440&h=1080"
             },
             "apple pie": {
-                ingredients: { apple: '2', flour: 'much', salt: 'a little' },
+                ingredients: { apple: '2', flour: 'a lot of / much', sugar: 'a little', butter: '3 slices of' },
                 steps: [
                     { seq: "first", text: "<span class='verb-highlight'>cut</span><span class='cn-hint'>(切)</span> <span class='ingredient-text'>two apples</span> into small pieces." },
-                    { seq: "second", text: "<span class='verb-highlight'>mix</span><span class='cn-hint'>(混合)</span> the apples with <span class='ingredient-text'>much flour</span> and <span class='ingredient-text'>a little salt</span>." },
+                    { seq: "second", text: "<span class='verb-highlight'>mix</span><span class='cn-hint'>(混合)</span> the apples with <span class='ingredient-text'>much flour</span>, <span class='ingredient-text'>a little sugar</span> and <span class='ingredient-text'>three slices of butter</span>." },
                     { seq: "third", text: "<span class='verb-highlight'>put</span><span class='cn-hint'>(放)</span> the yummy mix into the pie crust (派皮)." },
                     { seq: "last", text: "<span class='verb-highlight'>bake</span><span class='cn-hint'>(烤)</span> the apple pie in the oven." }
                 ],
                 image: "https://docs.google.com/drawings/d/e/2PACX-1vQ9rGzD_b-1mhHYbmZyWvOw4bpNfsXhyS6siCeNkZxF1QAbImjJnfrM0v3vVgVsKM-FiKeb6VBHknDC/pub?w=1440&h=1080"
             },
             "pudding": {
-                ingredients: { milk: '1 bottle of', egg: '2', sugar: 'some' },
+                ingredients: { water: '1 bottle of', milk: '2 glasses of', egg: '2', sugar: 'some' },
                 steps: [
-                    { seq: "first", text: "<span class='verb-highlight'>mix</span><span class='cn-hint'>(混合)</span> <span class='ingredient-text'>one bottle of milk</span> and <span class='ingredient-text'>two eggs</span> together." },
+                    { seq: "first", text: "<span class='verb-highlight'>mix</span><span class='cn-hint'>(混合)</span> <span class='ingredient-text'>one bottle of water</span>, <span class='ingredient-text'>two glasses of milk</span> and <span class='ingredient-text'>two eggs</span>." },
                     { seq: "second", text: "<span class='verb-highlight'>add</span><span class='cn-hint'>(加入)</span> <span class='ingredient-text'>some sugar</span> and <span class='verb-highlight'>stir</span><span class='cn-hint'>(攪拌)</span> the mix well." },
                     { seq: "third", text: "<span class='verb-highlight'>pour</span><span class='cn-hint'>(倒)</span> the mix into a small bowl." },
                     { seq: "last", text: "<span class='verb-highlight'>cook</span><span class='cn-hint'>(煮)</span> the pudding and <span class='verb-highlight'>wait</span><span class='cn-hint'>(等待)</span> for it to <span class='verb-highlight'>cool down</span><span class='cn-hint'>(冷卻)</span>." }
@@ -321,6 +316,8 @@
                 image: "https://docs.google.com/drawings/d/e/2PACX-1vSBFjDouEmTqWlyrOnG_7EafnR82FLdMmwCCyv0xP4KjT130zHjFeEMrcawJ8BuYhYpdr8mhmfng9_Q/pub?w=1440&h=1080"
             }
         };
+
+        const resultNames = { "french toast": "french toast", "cupcakes": "cupcakes", "brownies": "brownies", "apple pie": "an apple pie", "pudding": "pudding" };
 
         const ingredientsList = [
             { id: 'bread', label: 'bread', icon: '🍞', type: 'uncountable' },
@@ -330,71 +327,69 @@
             { id: 'milk', label: 'milk', icon: '🥛', type: 'uncountable' },
             { id: 'butter', label: 'butter', icon: '🧈', type: 'uncountable' },
             { id: 'oil', label: 'oil', icon: '🥃', type: 'uncountable' },
-            { id: 'cream_cheese', label: 'cheese', icon: '🧀', type: 'uncountable' },
+            { id: 'water', label: 'water', icon: '💧', type: 'uncountable' },
+            { id: 'chocolate', label: 'chocolate', icon: '🍫', type: 'uncountable' },
             { id: 'egg', label: 'egg', icon: '🥚', type: 'countable' },
             { id: 'apple', label: 'apple', icon: '🍎', type: 'countable' }
         ];
 
-        const qIcons = {
-            'slice': '📏', 'bag': '💰', 'glass': '🥂', 'cup': '☕', 
-            'bottle': '🍼', 'tub': '🍿', 'bowl': '🥣', 'can': '🥫', 
-            'a little': '🤏', 'some': '☁️', 'a lot of': '🌊', 'much': '🌊'
+        // Updated with URL mappings
+        const qIcons = { 
+            'slice': 'https://png.pngtree.com/png-vector/20240517/ourmid/pngtree-essential-features-of-a-high-quality-stainless-steel-kitchen-knife-comparing-png-image_12485923.png', 
+            'bag': 'https://static.vecteezy.com/system/resources/previews/071/294/942/non_2x/empty-burlap-sack-isolated-on-transparent-background-png.png', 
+            'glass': 'https://png.pngtree.com/png-clipart/20240701/original/pngtree-clear-shot-glasses-design-on-transparent-background-png-image_15464242.png', 
+            'cup': 'https://static.vecteezy.com/system/resources/thumbnails/059/310/711/small/blank-paper-cup-on-black-background-disposable-drinkware-cut-out-transparent-png.png', 
+            'bottle': 'https://png.pngtree.com/png-vector/20250325/ourmid/pngtree-water-bottle-png-image_15868794.png', 
+            'tub': 'https://png.pngtree.com/png-clipart/20230806/original/pngtree-carton-bowl-empty-of-popcorn-vector-icon-fun-container-flat-vector-picture-image_10007311.png', 
+            'bowl': 'https://www.pngall.com/wp-content/uploads/2018/05/Bowl-PNG-Image.png', 
+            'can': 'https://static.vecteezy.com/system/resources/thumbnails/044/245/623/small/stack-of-metal-food-cans-with-pull-tab-on-top-png.png', 
+            'a little': '🤏', 
+            'some': '☁️', 
+            'a lot of / much': '🌊' 
         };
 
-        let bowlData = {}; 
-        let bowlRawData = []; 
-        let tempNumber = null;
-        let activeDessert = null; 
-        let currentRecipeKey = null;
-        let currentSelections = {}; 
+        let bowlData = {}; let bowlRawData = []; let historyStack = []; let tempNumber = null;
+        let activeDessert = null; let currentRecipeKey = null; let currentSelections = {};
 
         function init() {
-            const grid = document.getElementById('ingredients-grid');
-            grid.innerHTML = '';
+            const grid = document.getElementById('ingredients-grid'); grid.innerHTML = '';
             ingredientsList.forEach(ing => {
                 const btn = document.createElement('button');
-                btn.className = "ingredient-btn bg-slate-50 border-4 border-slate-200 rounded-[32px] p-6 flex flex-col items-center justify-center shadow-md hover:border-blue-400 transition-all";
+                btn.className = "ingredient-btn bg-white border-4 border-slate-200 rounded-[24px] p-4 flex flex-col items-center justify-center shadow-sm hover:border-blue-400 transition-all";
                 btn.onclick = () => openModal(ing);
-                btn.innerHTML = `<span class="text-6xl mb-2">${ing.icon}</span><span class="text-xl font-black text-slate-700">${ing.label}</span>`;
+                btn.innerHTML = `<span class="text-5xl mb-1">${ing.icon}</span><span class="text-lg font-black text-slate-700">${ing.label}</span>`;
                 grid.appendChild(btn);
             });
         }
 
         function openModal(ing, stage = 'start') {
-            const modal = document.getElementById('quantifier-modal');
-            const qGrid = document.getElementById('quantifier-grid');
-            document.getElementById('modal-icon').innerText = ing.icon;
-            modal.classList.remove('hidden');
-            qGrid.innerHTML = '';
-
+            const modal = document.getElementById('quantifier-modal'); const qGrid = document.getElementById('quantifier-grid');
+            document.getElementById('modal-icon').innerText = ing.icon; modal.classList.remove('hidden'); qGrid.innerHTML = '';
             if (ing.type === 'countable') {
-                document.getElementById('modal-title').innerText = `how many ${ing.label}s do you want?`;
+                document.getElementById('modal-title').innerText = `how many ${ing.label}s?`;
                 ['1', '2', '3'].forEach(num => {
-                    const card = createModalCard(num, '');
-                    card.onclick = () => addToBowl(ing, num, num);
-                    qGrid.appendChild(card);
+                    const card = createModalCard(num, ''); card.onclick = () => addToBowl(ing, num, num); qGrid.appendChild(card);
                 });
             } else {
                 if (stage === 'start') {
-                    tempNumber = null;
-                    document.getElementById('modal-title').innerText = `how much ${ing.label} do you want?`;
+                    tempNumber = null; document.getElementById('modal-title').innerText = `how much ${ing.label}?`;
                     ['1', '2', '3'].forEach(num => {
-                        const card = createModalCard(num, '');
-                        card.onclick = () => { tempNumber = num; openModal(ing, 'quantifier'); };
-                        qGrid.appendChild(card);
+                        const card = createModalCard(num, ''); card.onclick = () => { tempNumber = num; openModal(ing, 'quantifier'); }; qGrid.appendChild(card);
                     });
-                    ['a little', 'some', 'a lot of', 'much'].forEach(opt => {
-                        const card = createModalCard('', opt, qIcons[opt]);
-                        card.onclick = () => addToBowl(ing, opt, opt);
-                        qGrid.appendChild(card);
+                    ['a little', 'some', 'a lot of / much'].forEach(opt => {
+                        const card = createModalCard('', opt, qIcons[opt]); card.onclick = () => addToBowl(ing, opt, opt); qGrid.appendChild(card);
                     });
                 } else {
                     document.getElementById('modal-title').innerText = `${tempNumber} ... of ${ing.label}?`;
                     ['slice', 'bag', 'glass', 'cup', 'bottle', 'tub', 'bowl', 'can'].forEach(q => {
                         const card = createModalCard('', q, qIcons[q]);
                         card.onclick = () => {
-                            const val = `${tempNumber} ${q}${tempNumber > 1 ? 's' : ''} of`;
-                            addToBowl(ing, val, val);
+                            let unit = q;
+                            if (tempNumber > 1) {
+                                if (q === 'glass') unit = 'glasses';
+                                else unit = q + 's';
+                            }
+                            const finalVal = `${tempNumber} ${unit} of`; addToBowl(ing, finalVal, finalVal);
                         };
                         qGrid.appendChild(card);
                     });
@@ -402,183 +397,130 @@
             }
         }
 
-        function createModalCard(numLabel, textLabel, emojiIcon) {
+        function createModalCard(numLabel, textLabel, contentSrc) {
             const card = document.createElement('button');
-            card.className = "ingredient-btn bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center hover:border-blue-500 transition-all";
-            let content = numLabel ? `<div class="num-circle">${numLabel}</div>` : `<span class="text-3xl mb-1">${emojiIcon}</span><span class="text-xs font-black text-slate-700 leading-tight">${textLabel}</span>`;
-            card.innerHTML = content;
-            return card;
+            card.className = "ingredient-btn bg-white border-2 border-slate-200 rounded-xl p-3 flex flex-col items-center justify-center hover:border-blue-500 transition-all";
+            
+            let content = "";
+            if (numLabel) {
+                content = `<div class="num-circle">${numLabel}</div>`;
+            } else {
+                if (contentSrc.startsWith('http')) {
+                    content = `<img src="${contentSrc}" class="quantifier-img mb-1" alt="${textLabel}">`;
+                } else {
+                    content = `<span class="text-3xl mb-1">${contentSrc}</span>`;
+                }
+                content += `<span class="text-[10px] font-black text-slate-700 leading-tight">${textLabel}</span>`;
+            }
+            
+            card.innerHTML = content; return card;
         }
 
         function addToBowl(ing, value, display) {
+            historyStack.push({ bowlData: JSON.parse(JSON.stringify(bowlData)), bowlRawData: [...bowlRawData], mainDisplayText: document.getElementById('main-display').innerText });
             const readable = ing.type === 'countable' ? `${value} ${ing.label}${value > 1 ? 's' : ''}` : `${display} ${ing.label}`;
-            bowlData[ing.id] = value;
-            bowlRawData.push(readable);
+            bowlData[ing.id] = value; bowlRawData.push(readable);
             document.getElementById('main-display').innerText = readable;
-            document.getElementById('sub-display').innerText = "added!";
             document.getElementById('bowl-empty-hint').style.display = 'none';
+            const area = document.getElementById('bowl-content-area'); const visual = document.createElement('div');
+            visual.className = 'ingredient-in-bowl'; visual.innerText = ing.icon; area.appendChild(visual); closeModal();
+            const bowl = document.getElementById('main-bowl'); bowl.classList.remove('success-bowl', 'error-bowl');
+        }
+
+        function undoLastIngredient() {
+            if (historyStack.length === 0) return;
+            const lastState = historyStack.pop();
+            bowlData = lastState.bowlData; bowlRawData = lastState.bowlRawData;
+            document.getElementById('main-display').innerText = lastState.mainDisplayText;
             const area = document.getElementById('bowl-content-area');
-            const visual = document.createElement('div');
-            visual.className = 'ingredient-in-bowl';
-            visual.innerText = ing.icon;
-            area.appendChild(visual);
-            closeModal();
-            const bowl = document.getElementById('main-bowl');
-            bowl.classList.remove('success-bowl', 'error-bowl');
+            if (area.lastChild) area.removeChild(area.lastChild);
+            if (bowlRawData.length === 0) { document.getElementById('bowl-empty-hint').style.display = 'flex'; document.getElementById('main-display').innerText = "kitchen challenge"; }
         }
 
         function checkMix() {
-            const bowl = document.getElementById('main-bowl');
-            const bowlKeys = Object.keys(bowlData).filter(k => bowlData[k] !== undefined);
-            if (bowlKeys.length === 0) return;
-            let foundKey = null;
+            const bowl = document.getElementById('main-bowl'); const bowlKeys = Object.keys(bowlData).filter(k => bowlData[k] !== undefined);
+            if (bowlKeys.length === 0) return; let foundKey = null;
             for (const [name, recipe] of Object.entries(recipes)) {
                 const recipeKeys = Object.keys(recipe.ingredients);
                 if (recipeKeys.length === bowlKeys.length) {
                     let match = true;
-                    for (const key of recipeKeys) {
-                        if (bowlData[key] !== recipe.ingredients[key]) { match = false; break; }
-                    }
+                    for (const key of recipeKeys) { if (bowlData[key] !== recipe.ingredients[key]) { match = false; break; } }
                     if (match) { foundKey = name; break; }
                 }
             }
-            if (foundKey) {
-                currentRecipeKey = foundKey;
-                activeDessert = recipes[foundKey];
-                startSequencePhase();
-            } else {
-                document.getElementById('error-overlay').style.display = 'flex';
-                bowl.classList.add('error-bowl');
-                setTimeout(() => bowl.classList.remove('error-bowl'), 500);
-            }
+            if (foundKey) { currentRecipeKey = foundKey; activeDessert = recipes[foundKey]; startSequencePhase(); } 
+            else { document.getElementById('error-overlay').style.display = 'flex'; bowl.classList.add('error-bowl'); setTimeout(() => bowl.classList.remove('error-bowl'), 500); }
         }
 
         function startSequencePhase() {
-            if (!activeDessert) return;
-            const overlay = document.getElementById('sequence-overlay');
-            const labelsContainer = document.getElementById('sequence-labels');
-            const listContainer = document.getElementById('sequence-list');
-            
-            overlay.style.display = 'flex';
-            labelsContainer.innerHTML = '';
-            listContainer.innerHTML = '';
-            currentSelections = {};
-            currentlySelectedLabel = null;
-            
+            if (!activeDessert) return; const overlay = document.getElementById('sequence-overlay');
+            const labelsContainer = document.getElementById('sequence-labels'); const listContainer = document.getElementById('sequence-list');
+            overlay.style.display = 'flex'; labelsContainer.innerHTML = ''; listContainer.innerHTML = '';
+            currentSelections = {}; currentlySelectedLabel = null;
             const labels = ["first", "second", "third", "last"];
-            labels.sort(() => Math.random() - 0.5);
-            labels.forEach((label, idx) => {
-                const pill = document.createElement('div');
-                pill.className = "label-pill";
-                pill.innerText = label;
-                pill.dataset.labelId = idx;
-                pill.onclick = () => selectLabel(pill);
-                labelsContainer.appendChild(pill);
+            labels.sort(() => Math.random() - 0.5).forEach((label, idx) => {
+                const pill = document.createElement('div'); pill.className = "label-pill"; pill.innerText = label; pill.dataset.labelId = idx; pill.onclick = () => selectLabel(pill); labelsContainer.appendChild(pill);
             });
             const scrambledSteps = [...activeDessert.steps].sort(() => Math.random() - 0.5);
             scrambledSteps.forEach((step, idx) => {
-                const card = document.createElement('div');
-                card.className = "step-card";
+                const card = document.createElement('div'); card.className = "step-card";
                 card.innerHTML = `<div class="step-slot" onclick="handleSlotClick(this, ${idx})">tap slot</div><div class="step-text">${step.text}</div>`;
-                card.dataset.correctSeq = step.seq;
-                listContainer.appendChild(card);
+                card.dataset.correctSeq = step.seq; listContainer.appendChild(card);
             });
         }
 
         let currentlySelectedLabel = null;
-        function selectLabel(el) {
-            if (currentlySelectedLabel) currentlySelectedLabel.classList.remove('ring-4', 'ring-yellow-400');
-            currentlySelectedLabel = el;
-            el.classList.add('ring-4', 'ring-yellow-400');
-        }
+        function selectLabel(el) { if (currentlySelectedLabel) currentlySelectedLabel.classList.remove('ring-4', 'ring-yellow-400'); currentlySelectedLabel = el; el.classList.add('ring-4', 'ring-yellow-400'); }
 
         function handleSlotClick(slot, idx) {
             if (slot.dataset.filledLabelId !== undefined) {
-                const labelId = slot.dataset.filledLabelId;
-                const originalPill = document.querySelector(`.label-pill[data-label-id="${labelId}"]`);
-                if (originalPill) { 
-                    originalPill.style.opacity = '1'; 
-                    originalPill.style.pointerEvents = 'auto'; 
-                }
-                slot.innerText = "tap slot";
-                slot.classList.remove('bg-blue-600', 'text-white');
-                delete slot.dataset.filledLabelId;
-                delete currentSelections[idx];
+                const labelId = slot.dataset.filledLabelId; const originalPill = document.querySelector(`.label-pill[data-label-id="${labelId}"]`);
+                if (originalPill) { originalPill.style.opacity = '1'; originalPill.style.pointerEvents = 'auto'; }
+                slot.innerText = "tap slot"; slot.classList.remove('bg-blue-600', 'text-white'); delete slot.dataset.filledLabelId; delete currentSelections[idx];
             }
             if (currentlySelectedLabel) {
-                slot.innerText = currentlySelectedLabel.innerText;
-                slot.classList.add('bg-blue-600', 'text-white');
-                slot.dataset.filledLabelId = currentlySelectedLabel.dataset.labelId;
-                currentSelections[idx] = currentlySelectedLabel.innerText;
-                currentlySelectedLabel.style.opacity = '0.3';
-                currentlySelectedLabel.style.pointerEvents = 'none';
-                currentlySelectedLabel.classList.remove('ring-4', 'ring-yellow-400');
-                currentlySelectedLabel = null;
+                slot.innerText = currentlySelectedLabel.innerText; slot.classList.add('bg-blue-600', 'text-white'); slot.dataset.filledLabelId = currentlySelectedLabel.dataset.labelId; currentSelections[idx] = currentlySelectedLabel.innerText; currentlySelectedLabel.style.opacity = '0.3'; currentlySelectedLabel.style.pointerEvents = 'none'; currentlySelectedLabel.classList.remove('ring-4', 'ring-yellow-400'); currentlySelectedLabel = null;
             }
         }
 
         function checkSequence() {
-            const slots = document.querySelectorAll('.step-card');
-            let allFilled = true;
+            const slots = document.querySelectorAll('.step-card'); let allFilled = true;
             slots.forEach((card, idx) => { if (!currentSelections[idx]) allFilled = false; });
-            if (!allFilled) return;
-
-            let allCorrect = true;
+            if (!allFilled) return; let allCorrect = true;
             slots.forEach((card, idx) => {
-                const selected = currentSelections[idx];
-                const correct = card.dataset.correctSeq;
-                if (selected !== correct) { allCorrect = false; card.style.borderColor = "#ef4444"; }
-                else { card.style.borderColor = "#22c55e"; }
+                const selected = currentSelections[idx]; const correct = card.dataset.correctSeq;
+                if (selected !== correct) { allCorrect = false; card.style.borderColor = "#ef4444"; } else { card.style.borderColor = "#22c55e"; }
             });
-            if (allCorrect) { showFinalGlory(); } 
-            else { 
-                setTimeout(() => { slots.forEach(card => card.style.borderColor = "#cbd5e1"); }, 1500); 
-            }
+            if (allCorrect) { showFinalGlory(); } else { setTimeout(() => { slots.forEach(card => card.style.borderColor = "#cbd5e1"); }, 1500); }
         }
 
         function showFinalGlory() {
-            if (!activeDessert) return;
-            document.getElementById('sequence-overlay').style.display = 'none';
-            const overlay = document.getElementById('success-overlay');
-            const isApplePie = currentRecipeKey === "apple pie";
+            if (!activeDessert) return; document.getElementById('sequence-overlay').style.display = 'none';
+            const overlay = document.getElementById('success-overlay'); const isApplePie = currentRecipeKey === "apple pie";
             document.getElementById('success-food-img').src = activeDessert.image;
-            let listStr = bowlRawData.join(", ");
-            const lastComma = listStr.lastIndexOf(", ");
+            let listStr = bowlRawData.join(", "); const lastComma = listStr.lastIndexOf(", ");
             if (lastComma !== -1) listStr = listStr.substring(0, lastComma) + " and " + listStr.substring(lastComma + 2);
-            document.getElementById('success-message').innerText = `${listStr} turn into a ${currentRecipeKey}!`;
-            const bonus = document.getElementById('popcorn-bonus');
-            if (isApplePie) bonus.classList.remove('hidden');
-            else bonus.classList.add('hidden');
+            document.getElementById('success-message').innerText = `${listStr} turn into ${resultNames[currentRecipeKey]}!`;
+            const bonus = document.getElementById('popcorn-bonus'); if (isApplePie) bonus.classList.remove('hidden'); else bonus.classList.add('hidden');
             overlay.style.display = 'flex';
         }
 
         function triggerReset() {
-            const overlay = document.getElementById('reset-overlay');
-            overlay.style.display = 'flex';
-            setTimeout(() => { 
-                resetBowlData(); 
-                overlay.style.display = 'none'; 
-                document.getElementById('sequence-overlay').style.display = 'none'; 
-            }, 1200);
+            const overlay = document.getElementById('reset-overlay'); overlay.style.display = 'flex';
+            setTimeout(() => { resetBowlData(); overlay.style.display = 'none'; document.getElementById('sequence-overlay').style.display = 'none'; }, 1200);
         }
 
         function resetBowlData() {
-            bowlData = {}; bowlRawData = []; activeDessert = null; currentRecipeKey = null;
-            document.getElementById('bowl-content-area').innerHTML = '';
-            document.getElementById('bowl-empty-hint').style.display = 'flex';
+            bowlData = {}; bowlRawData = []; historyStack = []; activeDessert = null; currentRecipeKey = null;
+            document.getElementById('bowl-content-area').innerHTML = ''; document.getElementById('bowl-empty-hint').style.display = 'flex';
             document.getElementById('main-display').innerText = "kitchen challenge";
-            document.getElementById('sub-display').innerText = "bowl emptied!";
             document.getElementById('main-bowl').classList.remove('success-bowl', 'error-bowl');
         }
 
         function closeModal() { document.getElementById('quantifier-modal').classList.add('hidden'); }
-        
         window.onload = function() {
-            document.getElementById('sequence-overlay').style.display = 'none';
-            document.getElementById('reset-overlay').style.display = 'none';
-            document.getElementById('error-overlay').style.display = 'none';
-            document.getElementById('success-overlay').style.display = 'none';
-            init();
+            document.getElementById('sequence-overlay').style.display = 'none'; document.getElementById('reset-overlay').style.display = 'none';
+            document.getElementById('error-overlay').style.display = 'none'; document.getElementById('success-overlay').style.display = 'none'; init();
         };
     </script>
 </body>
