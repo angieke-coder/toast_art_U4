@@ -13,7 +13,7 @@
             text-transform: lowercase !important;
         }
 
-        /* Large Fancy Bowl */
+        /* 大型豪華碗設計 */
         .bowl-fancy {
             width: 650px;
             height: 300px;
@@ -68,6 +68,7 @@
         #reset-overlay { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(50px); }
         #error-overlay { background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(20px); }
         #success-overlay { background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(40px); }
+        #guessing-overlay { background: #1e293b; color: white; backdrop-filter: blur(60px); z-index: 110; }
         #sequence-overlay { background: #f8fafc; padding: 2rem; justify-content: flex-start; }
 
         .big-icon { font-size: 18rem; }
@@ -98,7 +99,7 @@
             font-weight: 900;
         }
 
-        /* Sequence Step Cards - Ultra Clear */
+        /* 步驟配對卡片樣式 */
         .step-card {
             background: white;
             border: 5px dashed #cbd5e1;
@@ -113,7 +114,7 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
         .step-slot {
-            width: 180px;
+            width: 200px;
             height: 70px;
             background: #f1f5f9;
             border: 4px solid #e2e8f0;
@@ -122,7 +123,7 @@
             align-items: center;
             justify-content: center;
             font-weight: 900;
-            font-size: 1.8rem;
+            font-size: 2rem;
             color: #94a3b8;
             cursor: pointer;
             flex-shrink: 0;
@@ -133,7 +134,7 @@
             padding: 12px 35px;
             border-radius: 60px;
             font-weight: 900;
-            font-size: 2rem;
+            font-size: 2.2rem;
             cursor: pointer;
             box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
         }
@@ -149,16 +150,53 @@
             object-fit: contain;
         }
 
+        /* 極小化測試按鈕以防誤觸 */
+        .testing-btn {
+            position: fixed;
+            bottom: 5px;
+            right: 5px;
+            background: #cbd5e1;
+            color: #475569;
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            opacity: 0.3;
+            transition: all 0.3s;
+        }
+        .testing-btn:hover {
+            opacity: 1;
+            background: #f472b6;
+            color: white;
+            width: 60px;
+            height: 60px;
+            font-size: 2rem;
+        }
+
         .no-scrollbar::-webkit-scrollbar { display: none; }
         * { text-transform: lowercase !important; }
     </style>
 </head>
 <body class="bg-slate-50 h-screen w-screen overflow-hidden flex flex-col font-sans select-none text-slate-800">
 
-    <!-- Overlays -->
+    <!-- 極小化測試按鈕 -->
+    <button onclick="startTestingRecipe()" class="testing-btn" title="Testing">🧪</button>
+
+    <!-- 各種遮罩層 -->
     <div id="reset-overlay" class="fs-overlay">
         <div class="big-icon animate-spin">🔃</div>
         <div class="text-6xl font-black mt-10 text-slate-600">cleaning kitchen...</div>
+    </div>
+
+    <!-- 猜謎階段遮罩層 -->
+    <div id="guessing-overlay" class="fs-overlay">
+        <div class="text-9xl mb-12 animate-pulse">❓🧁🥧🍮❓</div>
+        <h2 class="text-8xl font-black mb-16 tracking-widest">what's the dessert?</h2>
+        <button onclick="showFinalGlory()" class="bg-blue-600 hover:bg-blue-700 text-white px-32 py-8 rounded-full text-6xl font-black shadow-2xl active:scale-95 transition-all">REVEAL! ✨</button>
     </div>
 
     <div id="error-overlay" class="fs-overlay" onclick="this.style.display='none'">
@@ -172,9 +210,10 @@
     </div>
 
     <div id="success-overlay" class="fs-overlay" onclick="this.style.display='none'">
+        <div class="sparkle-bg"></div>
         <div class="relative z-10 flex flex-col items-center justify-center w-full p-10">
-            <img id="success-food-img" class="glamorous-img mb-10" src="" alt="food reward">
-            <div id="success-message" class="text-4xl font-black text-slate-900 max-w-6xl leading-tight px-10 mb-6"></div>
+            <img id="success-food-img" class="glamorous-img mb-10" src="" alt="成品圖片">
+            <div id="success-message" class="text-4xl font-black text-slate-900 max-w-6xl leading-tight px-10 mb-6 text-center"></div>
             <div id="popcorn-bonus" class="text-3xl font-bold text-blue-600 italic hidden">enjoy it with a tub of popcorn!</div>
             <div class="text-2xl font-bold mt-8 text-amber-600 animate-pulse bg-amber-50 px-8 py-3 rounded-full border-4 border-amber-200">masterpiece! tap to close</div>
         </div>
@@ -188,7 +227,7 @@
         <button id="check-steps-btn" onclick="checkSequence()" class="mt-8 bg-green-600 text-white px-24 py-6 rounded-3xl text-5xl font-black shadow-2xl active:scale-95 transition-all">CHECK STEPS</button>
     </div>
 
-    <!-- Main Header -->
+    <!-- 頁首 -->
     <header class="h-24 bg-white shadow-md flex items-center justify-between px-16 border-b-4 border-slate-200 shrink-0">
         <div class="flex flex-col">
             <h1 id="main-display" class="text-4xl font-black text-blue-600 tracking-tight">Kitchen Challenge</h1>
@@ -198,13 +237,12 @@
     </header>
 
     <main id="game-container" class="flex flex-1 overflow-hidden">
-        <!-- Play Area -->
+        <!-- 碗與控制區 -->
         <div class="w-3/5 flex flex-col items-center justify-center p-10 relative bg-white">
             <div id="main-bowl" class="bowl-fancy transition-all duration-300">
                 <div id="bowl-content-area"></div>
                 <div id="bowl-empty-hint" class="absolute inset-0 flex items-center justify-center text-slate-300 font-black text-5xl pointer-events-none opacity-40">ADD INGREDIENTS</div>
             </div>
-            
             <div class="mt-20 flex gap-8">
                 <button onclick="triggerReset()" class="bg-slate-100 border-4 border-slate-300 text-slate-500 px-12 py-5 rounded-3xl text-3xl font-black shadow hover:bg-slate-200 active:scale-95 transition-all">reset</button>
                 <button onclick="undoLastIngredient()" class="bg-white border-4 border-amber-400 text-amber-500 px-12 py-5 rounded-3xl text-3xl font-black shadow hover:bg-amber-50 active:scale-95 transition-all">undo ↩️</button>
@@ -212,24 +250,17 @@
             </div>
         </div>
 
-        <!-- Ingredient Shelf -->
+        <!-- 食材架 -->
         <div class="w-2/5 bg-slate-100 shadow-inner flex flex-col border-l-8 border-slate-200">
-            <div class="p-6 bg-slate-200 border-b-4 border-slate-300 text-center">
-                <h2 class="text-3xl font-black text-slate-700">ingredient shelf</h2>
-            </div>
-            <div id="ingredients-grid" class="flex-1 p-8 grid grid-cols-2 gap-6 overflow-y-auto no-scrollbar">
-                <!-- Buttons added by JS -->
-            </div>
+            <div class="p-6 bg-slate-200 border-b-4 border-slate-300 text-center"><h2 class="text-3xl font-black text-slate-700">ingredient shelf</h2></div>
+            <div id="ingredients-grid" class="flex-1 p-8 grid grid-cols-2 gap-6 overflow-y-auto no-scrollbar"></div>
         </div>
     </main>
 
-    <!-- Modal -->
+    <!-- 量詞選擇彈窗 -->
     <div id="quantifier-modal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center hidden">
         <div class="bg-white rounded-[60px] p-12 max-w-6xl w-full shadow-[0_0_100px_rgba(0,0,0,0.3)] border-[12px] border-slate-100">
-            <div class="text-center mb-10">
-                <span id="modal-icon" class="text-9xl block mb-4"></span>
-                <h3 id="modal-title" class="text-5xl font-black text-slate-900 mb-4">how much?</h3>
-            </div>
+            <div class="text-center mb-10"><span id="modal-icon" class="text-9xl block mb-4"></span><h3 id="modal-title" class="text-5xl font-black text-slate-900 mb-4">how much?</h3></div>
             <div id="quantifier-grid" class="grid grid-cols-4 gap-6"></div>
             <button onclick="closeModal()" class="mt-12 w-full py-5 text-slate-400 text-3xl font-black hover:text-slate-600 transition-colors">go back</button>
         </div>
@@ -240,68 +271,72 @@
             "french toast": {
                 ingredients: { bread: '2 slices of', milk: '1 glass of', egg: '1', salt: 'a little' },
                 steps: [
-                    { seq: "first", text: "<span class='verb-highlight'>mix</span><span class='cn-hint'>(混合)</span> <span class='ingredient-text'>one glass of milk</span>, <span class='ingredient-text'>one egg</span>, and <span class='ingredient-text'>a little salt</span>." },
-                    { seq: "second", text: "<span class='verb-highlight'>dip</span><span class='cn-hint'>(沾)</span> <span class='ingredient-text'>two slices of bread</span> into the mix." },
-                    { seq: "third", text: "<span class='verb-highlight'>fry</span><span class='cn-hint'>(煎)</span> the bread in a pan until it <span class='verb-highlight'>turns</span><span class='cn-hint'>(變成)</span> yummy." },
-                    { seq: "last", text: "<span class='verb-highlight'>put</span><span class='cn-hint'>(放)</span> the toast on a plate and <span class='verb-highlight'>enjoy</span><span class='cn-hint'>(享受)</span> it!" }
+                    { seq: "first,", text: "<span class='verb-highlight'>mix</span><span class='cn-hint'>(混合)</span> <span class='ingredient-text'>one glass of milk</span>, <span class='ingredient-text'>one egg</span>, and <span class='ingredient-text'>a little salt</span>." },
+                    { seq: "second,", text: "<span class='verb-highlight'>dip</span><span class='cn-hint'>(沾)</span> <span class='ingredient-text'>two slices of bread</span> into the mix." },
+                    { seq: "third,", text: "<span class='verb-highlight'>fry</span><span class='cn-hint'>(煎)</span> the bread in a pan until it <span class='verb-highlight'>turns</span><span class='cn-hint'>(變成)</span> yummy." },
+                    { seq: "last,", text: "<span class='verb-highlight'>put</span><span class='cn-hint'>(放)</span> the toast on a plate and <span class='verb-highlight'>enjoy</span><span class='cn-hint'>(享受)</span> it!" }
                 ],
                 image: "https://docs.google.com/drawings/d/e/2PACX-1vRgbsgUlpnBjFUiHuZvq-vvbaJ_sKVFJxPOWlmgUSdSwL_l7uV3Wci0wymXP58_P3jSXwv_O5LvmC5_/pub?w=1440&h=1080"
             },
             "cupcakes": {
                 ingredients: { flour: '1 bag of', oil: '1 cup of', sugar: 'some', egg: '1' },
                 steps: [
-                    { seq: "first", text: "<span class='verb-highlight'>mix</span><span class='cn-hint'>(混合)</span> <span class='ingredient-text'>one bag of flour</span>, <span class='ingredient-text'>one cup of oil</span>, and <span class='ingredient-text'>some sugar</span>." },
-                    { seq: "second", text: "<span class='verb-highlight'>add</span><span class='cn-hint'>(加入)</span> <span class='ingredient-text'>one egg</span> and <span class='verb-highlight'>mix</span><span class='cn-hint'>(混合)</span> them together." },
-                    { seq: "third", text: "<span class='verb-highlight'>pour</span><span class='cn-hint'>(倒)</span> the yummy mix into small cups." },
-                    { seq: "last", text: "<span class='verb-highlight'>bake</span><span class='cn-hint'>(烤)</span> the cupcakes in the oven for 20 minutes." }
+                    { seq: "first,", text: "<span class='verb-highlight'>mix</span><span class='cn-hint'>(混合)</span> <span class='ingredient-text'>one bag of flour</span>, <span class='ingredient-text'>one cup of oil</span>, and <span class='ingredient-text'>some sugar</span>." },
+                    { seq: "second,", text: "<span class='verb-highlight'>add</span><span class='cn-hint'>(加入)</span> <span class='ingredient-text'>one egg</span> and <span class='verb-highlight'>mix</span><span class='cn-hint'>(混合)</span> them together." },
+                    { seq: "third,", text: "<span class='verb-highlight'>pour</span><span class='cn-hint'>(倒)</span> the yummy mix into small cups." },
+                    { seq: "last,", text: "<span class='verb-highlight'>bake</span><span class='cn-hint'>(烤)</span> the cupcakes in the oven for 20 minutes." }
                 ],
                 image: "https://docs.google.com/drawings/d/e/2PACX-1vQw0L0Lrcf3iHo1jeRv5ih09FsE2eOjrieEW4L-ykc2TnG8JYLE9YtRlPTr_-I7hQEnMdX1_e8tGOd_/pub?w=1440&h=1080"
             },
             "brownies": {
                 ingredients: { flour: '1 bowl of', butter: '1 can of', sugar: 'a lot of / much', chocolate: 'some' },
                 steps: [
-                    { seq: "first", text: "<span class='verb-highlight'>melt</span><span class='cn-hint'>(融化)</span> <span class='ingredient-text'>one can of butter</span> in a bowl." },
-                    { seq: "second", text: "<span class='verb-highlight'>mix</span><span class='cn-hint'>(混合)</span> the butter with <span class='ingredient-text'>a lot of sugar</span> and <span class='ingredient-text'>some chocolate</span>." },
-                    { seq: "third", text: "<span class='verb-highlight'>add</span><span class='cn-hint'>(加入)</span> <span class='ingredient-text'>one bowl of flour</span> and <span class='verb-highlight'>stir</span><span class='cn-hint'>(攪拌)</span> everything together." },
-                    { seq: "last", text: "<span class='verb-highlight'>bake</span><span class='cn-hint'>(烤)</span> the brownies so they <span class='verb-highlight'>become</span><span class='cn-hint'>(變成)</span> a great snack." }
+                    { seq: "first,", text: "<span class='verb-highlight'>melt</span><span class='cn-hint'>(融化)</span> <span class='ingredient-text'>one can of butter</span> in a bowl." },
+                    { seq: "second,", text: "<span class='verb-highlight'>mix</span><span class='cn-hint'>(混合)</span> the butter with <span class='ingredient-text'>a lot of sugar</span> and <span class='ingredient-text'>some chocolate</span>." },
+                    { seq: "third,", text: "<span class='verb-highlight'>add</span><span class='cn-hint'>(加入)</span> <span class='ingredient-text'>one bowl of flour</span> and <span class='verb-highlight'>stir</span><span class='cn-hint'>(攪拌)</span> everything together." },
+                    { seq: "last,", text: "<span class='verb-highlight'>bake</span><span class='cn-hint'>(烤)</span> the brownies so they <span class='verb-highlight'>become</span><span class='cn-hint'>(變成)</span> a great snack." }
                 ],
                 image: "https://docs.google.com/drawings/d/e/2PACX-1vSOgr3s1lqSAJNXyNr7OD-ZDjSCwtMv4-CIbqcvyN24Hs5GsGBbt76eYZAbh2Ps2FaE2XdOLEgnwbnK/pub?w=1440&h=1080"
             },
             "apple pie": {
                 ingredients: { apple: '2', flour: 'a lot of / much', sugar: 'a little', butter: '3 slices of' },
                 steps: [
-                    { seq: "first", text: "<span class='verb-highlight'>cut</span><span class='cn-hint'>(切)</span> <span class='ingredient-text'>two apples</span> into small pieces." },
-                    { seq: "second", text: "<span class='verb-highlight'>mix</span><span class='cn-hint'>(混合)</span> the apples with <span class='ingredient-text'>much flour</span>, <span class='ingredient-text'>a little sugar</span> and <span class='ingredient-text'>three slices of butter</span>." },
-                    { seq: "third", text: "<span class='verb-highlight'>put</span><span class='cn-hint'>(放)</span> the yummy mix into the pie crust (派皮)." },
-                    { seq: "last", text: "<span class='verb-highlight'>bake</span><span class='cn-hint'>(烤)</span> the apple pie in the oven." }
+                    { seq: "first,", text: "<span class='verb-highlight'>cut</span><span class='cn-hint'>(切)</span> <span class='ingredient-text'>two apples</span> into small pieces." },
+                    { seq: "second,", text: "<span class='verb-highlight'>mix</span><span class='cn-hint'>(混合)</span> the apples with <span class='ingredient-text'>much flour</span>, <span class='ingredient-text'>a little sugar</span> and <span class='ingredient-text'>three slices of butter</span>." },
+                    { seq: "third,", text: "<span class='verb-highlight'>put</span><span class='cn-hint'>(放)</span> the yummy mix into the pie crust (派皮)." },
+                    { seq: "last,", text: "<span class='verb-highlight'>bake</span><span class='cn-hint'>(烤)</span> the apple pie in the oven." }
                 ],
                 image: "https://docs.google.com/drawings/d/e/2PACX-1vQ9rGzD_b-1mhHYbmZyWvOw4bpNfsXhyS6siCeNkZxF1QAbImjJnfrM0v3vVgVsKM-FiKeb6VBHknDC/pub?w=1440&h=1080"
             },
             "pudding": {
                 ingredients: { water: '1 bottle of', milk: '2 glasses of', egg: '2', sugar: 'some' },
                 steps: [
-                    { seq: "first", text: "<span class='verb-highlight'>mix</span><span class='cn-hint'>(混合)</span> <span class='ingredient-text'>one bottle of water</span>, <span class='ingredient-text'>two glasses of milk</span> and <span class='ingredient-text'>two eggs</span>." },
-                    { seq: "second", text: "<span class='verb-highlight'>add</span><span class='cn-hint'>(加入)</span> <span class='ingredient-text'>some sugar</span> and <span class='verb-highlight'>stir</span><span class='cn-hint'>(攪拌)</span> the mix well." },
-                    { seq: "third", text: "<span class='verb-highlight'>pour</span><span class='cn-hint'>(倒)</span> the mix into a small bowl." },
-                    { seq: "last", text: "<span class='verb-highlight'>cook</span><span class='cn-hint'>(煮)</span> the pudding and <span class='verb-highlight'>wait</span><span class='cn-hint'>(等待)</span> for it to <span class='verb-highlight'>cool down</span><span class='cn-hint'>(冷卻)</span>." }
+                    { seq: "first,", text: "<span class='verb-highlight'>mix</span><span class='cn-hint'>(混合)</span> <span class='ingredient-text'>one bottle of water</span>, <span class='ingredient-text'>two glasses of milk</span> and <span class='ingredient-text'>two eggs</span>." },
+                    { seq: "second,", text: "<span class='verb-highlight'>add</span><span class='cn-hint'>(加入)</span> <span class='ingredient-text'>some sugar</span> and <span class='verb-highlight'>stir</span><span class='cn-hint'>(攪拌)</span> the mix well." },
+                    { seq: "third,", text: "<span class='verb-highlight'>pour</span><span class='cn-hint'>(倒)</span> the mix into a small bowl." },
+                    { seq: "last,", text: "<span class='verb-highlight'>cook</span><span class='cn-hint'>(煮)</span> the pudding and <span class='verb-highlight'>wait</span><span class='cn-hint'>(等待)</span> for it to <span class='verb-highlight'>cool down</span><span class='cn-hint'>(冷卻)</span>." }
                 ],
                 image: "https://docs.google.com/drawings/d/e/2PACX-1vSBFjDouEmTqWlyrOnG_7EafnR82FLdMmwCCyv0xP4KjT130zHjFeEMrcawJ8BuYhYpdr8mhmfng9_Q/pub?w=1440&h=1080"
+            },
+            "toast art": {
+                ingredients: {},
+                steps: [
+                    { seq: "first,", text: "<span class='verb-highlight'>get</span><span class='cn-hint'>(拿)</span> <span class='ingredient-text'>a slice of bread</span>." },
+                    { seq: "second,", text: "<span class='verb-highlight'>toast</span><span class='cn-hint'>(烤)</span> the bread." },
+                    { seq: "third,", text: "<span class='verb-highlight'>mix</span><span class='cn-hint'>(混合)</span> each spread with <span class='ingredient-text'>cream cheese</span> on the plate." },
+                    { seq: "last,", text: "<span class='verb-highlight'>paint</span><span class='cn-hint'>(畫)</span> a beautiful picture on the toast!" }
+                ],
+                image: "https://docs.google.com/drawings/d/e/2PACX-1vRgbsgUlpnBjFUiHuZvq-vvbaJ_sKVFJxPOWlmgUSdSwL_l7uV3Wci0wymXP58_P3jSXwv_O5LvmC5_/pub?w=1440&h=1080"
             }
         };
 
-        const resultNames = { "french toast": "french toast", "cupcakes": "cupcakes", "brownies": "brownies", "apple pie": "an apple pie", "pudding": "pudding" };
-
+        const resultNames = { "french toast": "french toast", "cupcakes": "cupcakes", "brownies": "brownies", "apple pie": "an apple pie", "pudding": "pudding", "toast art": "a toast art masterpiece" };
         const ingredientsList = [
-            { id: 'bread', icon: '🍞', type: 'uncountable' },
-            { id: 'flour', icon: '🌾', type: 'uncountable' },
-            { id: 'sugar', icon: '🍬', type: 'uncountable' },
-            { id: 'salt', icon: '🧂', type: 'uncountable' },
-            { id: 'milk', icon: '🥛', type: 'uncountable' },
-            { id: 'butter', icon: '🧈', type: 'uncountable' },
-            { id: 'oil', icon: '🥃', type: 'uncountable' },
-            { id: 'water', icon: '💧', type: 'uncountable' },
-            { id: 'chocolate', icon: '🍫', type: 'uncountable' },
-            { id: 'egg', icon: '🥚', type: 'countable' },
+            { id: 'bread', icon: '🍞', type: 'uncountable' }, { id: 'flour', icon: '🌾', type: 'uncountable' },
+            { id: 'sugar', icon: '🍬', type: 'uncountable' }, { id: 'salt', icon: '🧂', type: 'uncountable' },
+            { id: 'milk', icon: '🥛', type: 'uncountable' }, { id: 'butter', icon: '🧈', type: 'uncountable' },
+            { id: 'oil', icon: '🥃', type: 'uncountable' }, { id: 'water', icon: '💧', type: 'uncountable' },
+            { id: 'chocolate', icon: '🍫', type: 'uncountable' }, { id: 'egg', icon: '🥚', type: 'countable' },
             { id: 'apple', icon: '🍎', type: 'countable' }
         ];
 
@@ -314,9 +349,7 @@
             'tub': 'https://png.pngtree.com/png-clipart/20230806/original/pngtree-carton-bowl-empty-of-popcorn-vector-icon-fun-container-flat-vector-picture-image_10007311.png', 
             'bowl': 'https://www.pngall.com/wp-content/uploads/2018/05/Bowl-PNG-Image.png', 
             'can': 'https://static.vecteezy.com/system/resources/thumbnails/044/245/623/small/stack-of-metal-food-cans-with-pull-tab-on-top-png.png', 
-            'a little': '🤏', 
-            'some': '☁️', 
-            'a lot of / much': '🌊' 
+            'a little': '🤏', 'some': '☁️', 'a lot of / much': '🌊' 
         };
 
         let bowlData = {}; let bowlRawData = []; let historyStack = []; let tempNumber = null;
@@ -326,7 +359,7 @@
             const grid = document.getElementById('ingredients-grid'); grid.innerHTML = '';
             ingredientsList.forEach(ing => {
                 const btn = document.createElement('button');
-                btn.className = "bg-white border-4 border-slate-200 rounded-[40px] p-6 flex items-center justify-center shadow hover:border-blue-500 hover:shadow-blue-200 transition-all active:scale-95";
+                btn.className = "bg-white border-4 border-slate-200 rounded-[40px] p-6 flex items-center justify-center shadow hover:border-blue-500 transition-all active:scale-95";
                 btn.onclick = () => openModal(ing);
                 btn.innerHTML = `<span class="text-8xl">${ing.icon}</span>`;
                 grid.appendChild(btn);
@@ -336,7 +369,6 @@
         function openModal(ing, stage = 'start') {
             const modal = document.getElementById('quantifier-modal'); const qGrid = document.getElementById('quantifier-grid');
             document.getElementById('modal-icon').innerText = ing.icon; modal.classList.remove('hidden'); qGrid.innerHTML = '';
-            
             if (ing.type === 'countable') {
                 document.getElementById('modal-title').innerText = `how many?`;
                 ['1', '2', '3'].forEach(num => {
@@ -367,20 +399,9 @@
 
         function createModalCard(numLabel, textLabel, contentSrc) {
             const card = document.createElement('button');
-            card.className = "bg-white border-4 border-slate-200 rounded-[40px] p-6 flex flex-col items-center justify-center hover:border-blue-600 transition-all shadow-md active:scale-90";
-            let content = "";
-            if (numLabel) {
-                content = `<div class="num-circle">${numLabel}</div>`;
-            } else {
-                if (contentSrc.startsWith('http')) {
-                    content = `<img src="${contentSrc}" class="quantifier-img mb-2" alt="${textLabel}">`;
-                } else {
-                    content = `<span class="text-6xl mb-2">${contentSrc}</span>`;
-                }
-                if (['a little', 'some', 'a lot of / much'].includes(textLabel)) {
-                    content += `<span class="text-xl font-black text-slate-800 mt-2">${textLabel}</span>`;
-                }
-            }
+            card.className = "bg-white border-4 border-slate-200 rounded-[40px] p-6 flex flex-col items-center justify-center hover:border-blue-600 shadow-md active:scale-90 transition-all";
+            let content = numLabel ? `<div class="num-circle">${numLabel}</div>` : (contentSrc.startsWith('http') ? `<img src="${contentSrc}" class="quantifier-img mb-2">` : `<span class="text-7xl mb-2">${contentSrc}</span>`);
+            if (['a little', 'some', 'a lot of / much'].includes(textLabel)) content += `<span class="text-xl font-black mt-2">${textLabel}</span>`;
             card.innerHTML = content; return card;
         }
 
@@ -388,11 +409,9 @@
             historyStack.push({ bowlData: JSON.parse(JSON.stringify(bowlData)), bowlRawData: [...bowlRawData], mainDisplayText: document.getElementById('main-display').innerText });
             const readable = ing.type === 'countable' ? `${value} ${ing.id}${value > 1 ? 's' : ''}` : `${display} ${ing.id}`;
             bowlData[ing.id] = value; bowlRawData.push(readable);
-            document.getElementById('main-display').innerText = readable;
-            document.getElementById('bowl-empty-hint').style.display = 'none';
+            document.getElementById('main-display').innerText = readable; document.getElementById('bowl-empty-hint').style.display = 'none';
             const area = document.getElementById('bowl-content-area'); const visual = document.createElement('div');
             visual.className = 'ingredient-in-bowl'; visual.innerText = ing.icon; area.appendChild(visual); closeModal();
-            const bowl = document.getElementById('main-bowl'); bowl.classList.remove('success-bowl', 'error-bowl');
         }
 
         function undoLastIngredient() {
@@ -417,14 +436,20 @@
                 }
             }
             if (foundKey) { currentRecipeKey = foundKey; activeDessert = recipes[foundKey]; startSequencePhase(); } 
-            else { document.getElementById('error-overlay').style.display = 'flex'; setTimeout(() => { document.getElementById('error-overlay').style.display = 'none'; }, 2500); }
+            else { document.getElementById('error-overlay').style.display = 'flex'; setTimeout(() => { document.getElementById('error-overlay').style.display = 'none'; }, 2000); }
+        }
+
+        function startTestingRecipe() {
+            currentRecipeKey = "toast art";
+            activeDessert = recipes["toast art"];
+            startSequencePhase();
         }
 
         function startSequencePhase() {
             const overlay = document.getElementById('sequence-overlay'); overlay.style.display = 'flex';
             const labelsContainer = document.getElementById('sequence-labels'); const listContainer = document.getElementById('sequence-list');
             labelsContainer.innerHTML = ''; listContainer.innerHTML = ''; currentSelections = {};
-            const labels = ["first", "second", "third", "last"];
+            const labels = ["first,", "second,", "third,", "last,"];
             labels.sort(() => Math.random() - 0.5).forEach((label, idx) => {
                 const pill = document.createElement('div'); pill.className = "label-pill"; pill.innerText = label; pill.dataset.labelId = idx; pill.onclick = () => selectLabel(pill); labelsContainer.appendChild(pill);
             });
@@ -456,15 +481,21 @@
                 if (currentSelections[idx] !== card.dataset.correctSeq) { allCorrect = false; card.style.borderColor = "#ef4444"; } 
                 else { card.style.borderColor = "#22c55e"; }
             });
-            if (allCorrect) showFinalGlory();
+            if (allCorrect) showGuessingScreen();
             else setTimeout(() => { slots.forEach(card => card.style.borderColor = "#cbd5e1"); }, 2000);
         }
 
-        function showFinalGlory() {
+        function showGuessingScreen() {
             document.getElementById('sequence-overlay').style.display = 'none';
+            document.getElementById('guessing-overlay').style.display = 'flex';
+        }
+
+        function showFinalGlory() {
+            document.getElementById('guessing-overlay').style.display = 'none';
             const overlay = document.getElementById('success-overlay');
             document.getElementById('success-food-img').src = activeDessert.image;
-            let listStr = bowlRawData.join(", "); const lastComma = listStr.lastIndexOf(", ");
+            let listStr = bowlRawData.length > 0 ? bowlRawData.join(", ") : "the steps";
+            const lastComma = listStr.lastIndexOf(", ");
             if (lastComma !== -1) listStr = listStr.substring(0, lastComma) + " and " + listStr.substring(lastComma + 2);
             document.getElementById('success-message').innerText = `${listStr} turn into ${resultNames[currentRecipeKey]}!`;
             if (currentRecipeKey === "apple pie") document.getElementById('popcorn-bonus').classList.remove('hidden');
